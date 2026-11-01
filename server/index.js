@@ -232,6 +232,39 @@ app.post('/api/orders', (req, res) => {
   }
 });
 
+// 5.5 USER CART PERSISTENCE (GET & SYNC CART IN DATABASE)
+app.get('/api/cart', authenticateToken, (req, res) => {
+  try {
+    const row = db.prepare('SELECT items_json FROM carts WHERE user_id = ?').get(req.user.id);
+    const cart = row ? JSON.parse(row.items_json || '[]') : [];
+    res.json({ cart });
+  } catch (error) {
+    console.error('Fetch cart error:', error);
+    res.status(500).json({ error: 'Failed to fetch cart' });
+  }
+});
+
+app.put('/api/cart', authenticateToken, (req, res) => {
+  try {
+    const { cart } = req.body;
+    const itemsJson = JSON.stringify(cart || []);
+
+    const upsert = db.prepare(`
+      INSERT INTO carts (user_id, items_json, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(user_id) DO UPDATE SET
+        items_json = excluded.items_json,
+        updated_at = CURRENT_TIMESTAMP
+    `);
+
+    upsert.run(req.user.id, itemsJson);
+    res.json({ success: true, count: (cart || []).length });
+  } catch (error) {
+    console.error('Save cart error:', error);
+    res.status(500).json({ error: 'Failed to save cart to database' });
+  }
+});
+
 // 6. HEALTH CHECK
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'LOOSR API', timestamp: new Date().toISOString() });

@@ -28,6 +28,34 @@ export default function App() {
   const [toast, setToast] = useState({ message: '', isVisible: false });
   const lenisRef = useRef(null);
 
+  // Helper to sync cart with database for logged-in user
+  const syncCartToDb = (newCart) => {
+    const token = localStorage.getItem('loosr_token');
+    if (token) {
+      fetch('/api/cart', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ cart: newCart }),
+      }).catch((err) => console.error('Cart sync error:', err));
+    }
+  };
+
+  const fetchUserCart = (token) => {
+    fetch('/api/cart', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject('Failed to fetch cart')))
+      .then((data) => {
+        if (data && Array.isArray(data.cart) && data.cart.length > 0) {
+          setCart(data.cart);
+        }
+      })
+      .catch((err) => console.error('Load cart error:', err));
+  };
+
   // Initialize user session on mount
   useEffect(() => {
     const token = localStorage.getItem('loosr_token');
@@ -39,6 +67,7 @@ export default function App() {
         .then((data) => {
           if (data && data.user) {
             setUser(data.user);
+            fetchUserCart(token);
           }
         })
         .catch(() => {
@@ -85,15 +114,15 @@ export default function App() {
           x.chosenSize === (product.chosenSize || 'L')
       );
 
+      let next;
       if (existingIndex > -1) {
-        const next = [...prev];
+        next = [...prev];
         next[existingIndex] = {
           ...next[existingIndex],
           qty: next[existingIndex].qty + 1,
         };
-        return next;
       } else {
-        return [
+        next = [
           ...prev,
           {
             ...product,
@@ -103,6 +132,8 @@ export default function App() {
           },
         ];
       }
+      syncCartToDb(next);
+      return next;
     });
 
     showToast(`Added ${product.name} to bag`);
@@ -110,7 +141,7 @@ export default function App() {
 
   const handleUpdateQty = (item, delta) => {
     setCart((prev) => {
-      return prev
+      const next = prev
         .map((x) => {
           if (
             x.id === item.id &&
@@ -122,20 +153,24 @@ export default function App() {
           return x;
         })
         .filter((x) => x.qty > 0);
+      syncCartToDb(next);
+      return next;
     });
   };
 
   const handleRemoveItem = (item) => {
-    setCart((prev) =>
-      prev.filter(
+    setCart((prev) => {
+      const next = prev.filter(
         (x) =>
           !(
             x.id === item.id &&
             x.chosenColor === item.chosenColor &&
             x.chosenSize === item.chosenSize
           )
-      )
-    );
+      );
+      syncCartToDb(next);
+      return next;
+    });
     showToast('Item removed');
   };
 
@@ -168,6 +203,7 @@ export default function App() {
     }
 
     setCart([]);
+    syncCartToDb([]);
     setIsCartOpen(false);
   };
 
@@ -268,6 +304,8 @@ export default function App() {
         onClose={() => setIsAuthOpen(false)}
         onAuthSuccess={(loggedInUser) => {
           setUser(loggedInUser);
+          const token = localStorage.getItem('loosr_token');
+          if (token) fetchUserCart(token);
           showToast(`Welcome, ${loggedInUser.name}!`);
         }}
       />
