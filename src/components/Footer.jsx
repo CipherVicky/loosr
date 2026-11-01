@@ -35,7 +35,7 @@ export default function Footer({ onShopClick }) {
 
           <button
             onClick={onShopClick}
-            className="self-start md:self-center px-8 py-4 bg-lime text-ink text-xs font-black tracking-wider uppercase border border-ink hover:bg-white transition-all duration-200 shadow-[4px_4px_0px_#ffffff] active:translate-x-0.5 active:translate-y-0.5"
+            className="self-start md:self-center px-8 py-4 bg-lime text-neutral-950 text-xs font-black tracking-wider uppercase border border-ink hover:bg-white transition-all duration-200 shadow-[4px_4px_0px_#ffffff] active:translate-x-0.5 active:translate-y-0.5"
           >
             FIND YOUR FIT ↗
           </button>
@@ -95,7 +95,7 @@ export default function Footer({ onShopClick }) {
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-ink text-white hover:bg-lime hover:text-ink transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-ink text-white hover:bg-lime hover:text-neutral-950 transition-colors"
                   aria-label="Submit newsletter"
                 >
                   {subscribed ? <Check className="w-3.5 h-3.5 text-lime" /> : <ArrowRight className="w-3.5 h-3.5" />}

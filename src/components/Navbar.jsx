@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, User, Menu, X, Sparkles } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({
   cartCount,
@@ -97,7 +98,7 @@ export default function Navbar({
                   className={`nav-sliding-underline text-xs font-black tracking-wider transition-colors duration-200 uppercase relative ${
                     isActive
                       ? 'text-ink font-black active'
-                      : 'text-[#666] hover:text-ink'
+                      : 'text-muted hover:text-ink'
                   }`}
                 >
                   {link.name}
@@ -113,14 +114,16 @@ export default function Navbar({
             })}
           </nav>
 
-          {/* Nav Right CTAs: User Auth/Profile & Bag */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Nav Right CTAs: Theme Switcher, User Auth/Profile & Bag */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Light / Dark Mode Theme Switcher */}
+            <ThemeToggle />
             
             {/* User Profile / Login Button */}
             {user ? (
               <button
                 onClick={onOpenProfile}
-                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-black tracking-wider uppercase border border-ink bg-white hover:bg-ink hover:text-white transition-all duration-200 shadow-[2px_2px_0px_#111111]"
+                className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-black tracking-wider uppercase border border-ink bg-white hover:bg-ink hover:text-white transition-all duration-200 shadow-[2px_2px_0px_#111111]"
                 title="View your profile and past orders"
               >
                 <div className="w-4 h-4 rounded-full bg-lime text-neutral-950 flex items-center justify-center text-[9px] font-black">
@@ -133,7 +136,7 @@ export default function Navbar({
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black tracking-wider uppercase border border-line bg-white hover:border-ink hover:bg-paper transition-all duration-200 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-black tracking-wider uppercase border border-line bg-white hover:border-ink hover:bg-paper transition-all duration-200 shadow-sm"
                 title="Login or register an account"
               >
                 <User className="w-3.5 h-3.5 text-muted" />
@@ -210,6 +213,12 @@ export default function Navbar({
                   {activeTab === link.id && <span className="w-2 h-2 rounded-full bg-lime"></span>}
                 </button>
               ))}
+
+              {/* Mobile Theme Switcher */}
+              <div className="pt-3 pb-1 border-t border-line/60 flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-muted">THEME MODE</span>
+                <ThemeToggle />
+              </div>
 
               {user ? (
                 <button

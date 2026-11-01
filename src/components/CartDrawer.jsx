@@ -147,7 +147,7 @@ export default function CartDrawer({
                   </p>
                   <button
                     onClick={onClose}
-                    className="mt-5 px-6 py-3 bg-lime text-ink text-xs font-black uppercase border border-ink shadow-[3px_3px_0px_#111111]"
+                    className="mt-5 px-6 py-3 bg-lime text-neutral-950 text-xs font-black uppercase border border-ink shadow-[3px_3px_0px_#111111]"
                   >
                     CONTINUE SHOPPING
                   </button>
@@ -292,7 +292,7 @@ export default function CartDrawer({
 
                   <button
                     type="submit"
-                    className="w-full mt-3 py-3.5 bg-lime hover:bg-ink hover:text-lime text-ink text-xs font-black tracking-widest uppercase border border-ink shadow-[4px_4px_0px_#111111] transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="w-full mt-3 py-3.5 bg-lime hover:bg-ink hover:text-lime text-neutral-950 text-xs font-black tracking-widest uppercase border border-ink shadow-[4px_4px_0px_#111111] transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     PLACE DEMO ORDER ↗
                   </button>

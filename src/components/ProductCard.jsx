@@ -107,7 +107,7 @@ export default function ProductCard({
           className={`absolute bottom-3 right-3 px-3.5 py-2 text-[10px] font-black tracking-wider uppercase border border-ink transition-all duration-200 z-10 shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center gap-1.5 ${
             addedAnim
               ? 'bg-ink text-lime border-ink'
-              : 'bg-lime text-ink hover:bg-ink hover:text-lime'
+              : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
           }`}
         >
           {addedAnim ? (

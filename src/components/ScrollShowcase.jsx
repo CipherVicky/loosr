@@ -155,7 +155,7 @@ export default function ScrollShowcase({ onAddToCart }) {
               onClick={() => setIsAutoSpin(!isAutoSpin)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase border transition-all ${
                 isAutoSpin
-                  ? 'bg-lime text-ink border-ink shadow-[2px_2px_0px_#111111]'
+                  ? 'bg-lime text-neutral-950 border-ink shadow-[2px_2px_0px_#111111]'
                   : 'bg-white text-ink border-line hover:border-ink'
               }`}
               title="Auto-rotate 360° continuously for video recording"
@@ -448,7 +448,7 @@ export default function ScrollShowcase({ onAddToCart }) {
             className={`w-full sm:w-auto px-7 py-3.5 text-xs font-black tracking-wider uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
               added
                 ? 'bg-ink text-lime'
-                : 'bg-lime text-ink hover:bg-ink hover:text-lime'
+                : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
             }`}
           >
             {added ? (

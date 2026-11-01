@@ -322,7 +322,7 @@ export default function App() {
 
       {/* Sub-Header Breadcrumb Bar for Dedicated Section Pages */}
       {activeTab !== 'home' && (
-        <div className="bg-white border-b border-line py-2.5 px-4 md:px-8">
+        <div className="bg-card border-b border-line py-2.5 px-4 md:px-8 transition-colors">
           <div className="max-w-[1240px] mx-auto flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 font-black uppercase tracking-wider text-muted">
               <button

@@ -73,7 +73,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-8 h-8 bg-ink text-white hover:bg-lime hover:text-ink flex items-center justify-center border border-ink transition-colors"
+            className="absolute top-4 right-4 z-20 w-8 h-8 bg-ink text-white hover:bg-lime hover:text-neutral-950 flex items-center justify-center border border-ink transition-colors"
             aria-label="Close auth"
           >
             <X className="w-4 h-4" />
@@ -224,7 +224,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 py-3.5 bg-lime hover:bg-ink hover:text-lime text-ink text-xs font-black tracking-widest uppercase border border-ink shadow-[4px_4px_0px_#111111] transition-all duration-200 flex items-center justify-center gap-2 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50"
+              className="w-full mt-4 py-3.5 bg-lime hover:bg-ink hover:text-lime text-neutral-950 text-xs font-black tracking-widest uppercase border border-ink shadow-[4px_4px_0px_#111111] transition-all duration-200 flex items-center justify-center gap-2 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50"
             >
               <span>{loading ? 'PROCESSING...' : mode === 'login' ? 'LOGIN TO STORE ↗' : 'CREATE ACCOUNT ↗'}</span>
               {!loading && <ArrowRight className="w-4 h-4" />}

@@ -3,13 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --ink: #111111;
-  --paper: #f5f3ef;
-  --lime: #d7ff36;
-  --muted: #77766f;
-  --line: #dedbd4;
-  --card: #fffefa;
+  --ink: 17 17 17;
+  --paper: 245 243 239;
+  --card: 255 254 250;
+  --line: 222 219 212;
+  --muted: 119 118 111;
   --red: #a83b2e;
+  --lime-color: #d7ff36;
+  color-scheme: light;
+}
+
+html.dark {
+  --ink: 245 243 239;
+  --paper: 13 14 18;
+  --card: 22 24 31;
+  --line: 45 49 62;
+  --muted: 160 163 175;
+  color-scheme: dark;
+}
+
+body {
+  background-color: rgb(var(--paper));
+  color: rgb(var(--ink));
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html.lenis, html.lenis body {
@@ -89,4 +105,74 @@ html.lenis, html.lenis body {
 .nav-sliding-underline.active::after {
   transform: scaleX(1);
   background-color: #d7ff36;
+}
+
+/* -------------------------------------------------------------
+   DARK MODE TEXT CONTRAST & CARD BACKGROUND RULES
+   Guarantees maximum visibility across all themes
+-------------------------------------------------------------- */
+
+/* 1. Ensure any element with bg-lime (neon background) has high-contrast black text */
+.bg-lime {
+  color: #0a0a0a !important;
+}
+
+.bg-lime svg:not(.fill-current) {
+  stroke: #0a0a0a !important;
+}
+
+/* When a lime button is hovered and styled to invert (hover:bg-ink hover:text-lime) */
+button.bg-lime:hover,
+a.bg-lime:hover {
+  color: inherit;
+}
+
+/* 2. In dark mode, convert pure white backgrounds to deep slate cards */
+html.dark .bg-white {
+  background-color: rgb(22 24 31 / var(--tw-bg-opacity, 1)) !important;
+  color: rgb(245 243 239) !important;
+}
+
+html.dark .bg-white\/90,
+html.dark .bg-white\/80,
+html.dark .bg-white\/70 {
+  background-color: rgb(22 24 31 / 0.88) !important;
+  color: rgb(245 243 239) !important;
+}
+
+html.dark .bg-paper\/90 {
+  background-color: rgb(13 14 18 / 0.92) !important;
+}
+
+/* 3. In dark mode, adjust borders and brutalist shadows for dark canvases */
+html.dark .border-ink {
+  border-color: rgb(75 80 98) !important;
+}
+
+html.dark .border-line {
+  border-color: rgb(45 49 62) !important;
+}
+
+html.dark button[class*="shadow-"],
+html.dark div[class*="shadow-"] {
+  box-shadow: 2px 2px 0px rgba(215, 255, 54, 0.35) !important;
+}
+
+/* 4. In dark mode, inputs, textareas, and selects */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: rgb(22 24 31) !important;
+  color: rgb(245 243 239) !important;
+  border-color: rgb(45 49 62) !important;
+}
+
+html.dark select option {
+  background-color: rgb(22 24 31) !important;
+  color: rgb(245 243 239) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgb(160 163 175 / 0.6) !important;
 }

@@ -103,7 +103,7 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
 
                 <button
                   onClick={onInspect3D}
-                  className="px-5 py-3.5 bg-white text-ink font-black text-xs tracking-wider uppercase border border-line hover:border-ink transition-colors flex items-center gap-2"
+                  className="px-5 py-3.5 bg-card text-ink font-black text-xs tracking-wider uppercase border border-line hover:border-ink transition-colors flex items-center gap-2"
                 >
                   <Box className="w-4 h-4" />
                   <span>VIEW IN 360° INSPECT</span>

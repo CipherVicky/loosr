@@ -43,14 +43,14 @@ export default function Lookbook({ onShopCategory }) {
           <div className="flex gap-2">
             <button
               onClick={scrollLeft}
-              className="w-10 h-10 border border-white/20 bg-white/5 hover:bg-lime hover:text-ink text-white flex items-center justify-center transition-colors"
+              className="w-10 h-10 border border-white/20 bg-white/5 hover:bg-lime hover:text-neutral-950 text-white flex items-center justify-center transition-colors"
               aria-label="Scroll left"
             >
               ←
             </button>
             <button
               onClick={scrollRight}
-              className="w-10 h-10 border border-white/20 bg-white/5 hover:bg-lime hover:text-ink text-white flex items-center justify-center transition-colors"
+              className="w-10 h-10 border border-white/20 bg-white/5 hover:bg-lime hover:text-neutral-950 text-white flex items-center justify-center transition-colors"
               aria-label="Scroll right"
             >
               →
@@ -132,7 +132,7 @@ export default function Lookbook({ onShopCategory }) {
               {/* Jump to shop */}
               <button
                 onClick={() => onShopCategory('All')}
-                className="w-full py-3 bg-white/10 hover:bg-lime hover:text-ink text-white text-[11px] font-black tracking-widest uppercase border border-white/20 transition-all duration-200 flex items-center justify-center gap-2 group-hover:border-lime"
+                className="w-full py-3 bg-white/10 hover:bg-lime hover:text-neutral-950 text-white text-[11px] font-black tracking-widest uppercase border border-white/20 transition-all duration-200 flex items-center justify-center gap-2 group-hover:border-lime"
               >
                 <span>EXPLORE PIECE</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

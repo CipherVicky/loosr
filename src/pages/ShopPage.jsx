@@ -94,8 +94,8 @@ export default function ShopPage({
                   }}
                   className={`px-4 py-2 text-xs font-black tracking-wider uppercase border transition-all duration-200 whitespace-nowrap ${
                     selectedCat.toLowerCase() === cat.toLowerCase()
-                      ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36]'
-                      : 'bg-white text-ink border-line hover:border-ink'
+                      ? 'bg-ink text-paper border-ink shadow-[2px_2px_0px_#d7ff36]'
+                      : 'bg-card text-ink border-line hover:border-ink'
                   }`}
                 >
                   {cat}
@@ -112,14 +112,14 @@ export default function ShopPage({
                   placeholder="SEARCH CATALOGUE..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-line pl-9 pr-3 py-2 text-xs font-black placeholder:text-muted/60 focus:outline-none focus:border-ink transition-colors uppercase tracking-wider"
+                  className="w-full bg-card border border-line pl-9 pr-3 py-2 text-xs font-black text-ink placeholder:text-muted/60 focus:outline-none focus:border-ink transition-colors uppercase tracking-wider"
                 />
               </div>
 
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white border border-line px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus:border-ink transition-colors cursor-pointer"
+                className="bg-card text-ink border border-line px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus:border-ink transition-colors cursor-pointer"
               >
                 <option value="featured">FEATURED</option>
                 <option value="price-low">PRICE: LOW TO HIGH</option>
@@ -176,7 +176,7 @@ export default function ShopPage({
 
       {/* Floating Direct Checkout Bar if Cart Has Items */}
       <section className="max-w-[1240px] mx-auto px-4 md:px-8 mt-16">
-        <div className="bg-white border border-ink p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[6px_6px_0px_#111111]">
+        <div className="bg-card border border-ink p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[6px_6px_0px_#111111]">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-lime flex items-center justify-center border border-ink font-black text-neutral-950">
               <ShieldCheck className="w-6 h-6 text-neutral-950" />

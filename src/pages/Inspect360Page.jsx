@@ -117,7 +117,7 @@ export default function Inspect360Page({ onAddToCart, onOpenCart }) {
                       setColorTint(null);
                       setSelectedColorway('original');
                     }}
-                    className="p-1.5 bg-white text-ink border border-line hover:border-ink transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2"
+                    className="p-1.5 bg-card text-ink border border-line hover:border-ink transition-colors flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2"
                     title="Reset view"
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -197,8 +197,8 @@ export default function Inspect360Page({ onAddToCart, onOpenCart }) {
                       onClick={() => handleColorwayChange(cw)}
                       className={`p-2.5 text-left border text-xs font-black uppercase transition-all duration-200 flex items-center gap-2 ${
                         selectedColorway === cw.id
-                          ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36]'
-                          : 'bg-white text-ink border-line hover:border-ink'
+                          ? 'bg-ink text-paper border-ink shadow-[2px_2px_0px_#d7ff36]'
+                          : 'bg-card text-ink border-line hover:border-ink'
                       }`}
                     >
                       <span
@@ -224,8 +224,8 @@ export default function Inspect360Page({ onAddToCart, onOpenCart }) {
                       onClick={() => setActiveSize(sz)}
                       className={`py-2.5 text-xs font-black uppercase border transition-all duration-200 ${
                         activeSize === sz
-                          ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36]'
-                          : 'bg-white text-ink border-line hover:border-ink'
+                          ? 'bg-ink text-paper border-ink shadow-[2px_2px_0px_#d7ff36]'
+                          : 'bg-card text-ink border-line hover:border-ink'
                       }`}
                     >
                       {sz}

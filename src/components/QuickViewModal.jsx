@@ -53,7 +53,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-9 h-9 bg-ink text-white hover:bg-lime hover:text-ink flex items-center justify-center border border-ink transition-colors"
+            className="absolute top-4 right-4 z-20 w-9 h-9 bg-ink text-white hover:bg-lime hover:text-neutral-950 flex items-center justify-center border border-ink transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -150,7 +150,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                       {rupee(product.old)}
                     </span>
                   )}
-                  <span className="text-[10px] font-black bg-lime text-ink px-2 py-0.5 border border-ink">
+                  <span className="text-[10px] font-black bg-lime text-neutral-950 px-2 py-0.5 border border-ink">
                     SAVE {rupee(product.old - product.price)}
                   </span>
                 </div>
@@ -263,7 +263,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                   className={`w-full py-4 text-xs font-black tracking-widest uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                     added
                       ? 'bg-ink text-lime'
-                      : 'bg-lime text-ink hover:bg-ink hover:text-lime'
+                      : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
                   }`}
                 >
                   {added ? (

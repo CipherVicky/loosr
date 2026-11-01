@@ -105,7 +105,7 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-8 h-8 bg-ink text-white hover:bg-lime hover:text-ink flex items-center justify-center border border-ink transition-colors"
+            className="absolute top-4 right-4 z-20 w-8 h-8 bg-ink text-white hover:bg-lime hover:text-neutral-950 flex items-center justify-center border border-ink transition-colors"
             aria-label="Close profile"
           >
             <X className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2.5 bg-lime text-ink text-xs font-black uppercase border border-ink shadow-[2px_2px_0px_#111111]"
+                      className="px-6 py-2.5 bg-lime text-neutral-950 text-xs font-black uppercase border border-ink shadow-[2px_2px_0px_#111111]"
                     >
                       {loading ? 'SAVING...' : 'SAVE CHANGES'}
                     </button>
@@ -294,7 +294,7 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
                     <div key={ord.id} className="p-4 bg-card border border-line flex flex-col gap-2">
                       <div className="flex items-center justify-between text-xs font-mono font-bold">
                         <span className="text-ink">#{ord.order_number}</span>
-                        <span className="px-2 py-0.5 bg-lime text-ink text-[10px] font-black border border-ink">
+                        <span className="px-2 py-0.5 bg-lime text-neutral-950 text-[10px] font-black border border-ink">
                           {ord.status}
                         </span>
                       </div>

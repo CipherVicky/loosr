@@ -79,7 +79,7 @@ export default function ProductGrid({
             </p>
             <button
               onClick={() => onSelectCategory('All')}
-              className="mt-4 px-4 py-2 bg-lime text-ink text-xs font-black uppercase border border-ink"
+              className="mt-4 px-4 py-2 bg-lime text-neutral-950 text-xs font-black uppercase border border-ink shadow-[2px_2px_0px_#111111]"
             >
               Reset Filters
             </button>

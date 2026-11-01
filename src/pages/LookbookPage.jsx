@@ -125,7 +125,7 @@ export default function LookbookPage({ onAddToCart, onOpenCart, onOpenQuickView 
                     {look.specs.map((sp) => (
                       <span
                         key={sp}
-                        className="text-[10px] font-black bg-white border border-line px-2.5 py-1 text-ink uppercase"
+                        className="text-[10px] font-black bg-card border border-line px-2.5 py-1 text-ink uppercase"
                       >
                         {sp}
                       </span>
@@ -150,7 +150,7 @@ export default function LookbookPage({ onAddToCart, onOpenCart, onOpenQuickView 
 
                   <button
                     onClick={() => onOpenQuickView(product)}
-                    className="px-4 py-3.5 bg-white text-ink font-black text-xs tracking-wider uppercase border border-line hover:border-ink transition-colors flex items-center gap-1.5"
+                    className="px-4 py-3.5 bg-card text-ink font-black text-xs tracking-wider uppercase border border-line hover:border-ink transition-colors flex items-center gap-1.5"
                   >
                     <Eye className="w-4 h-4 text-muted" />
                     <span>QUICK VIEW</span>

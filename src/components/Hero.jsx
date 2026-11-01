@@ -157,7 +157,7 @@ export default function Hero({ onShopClick, onLookbookClick }) {
             >
               <button
                 onClick={onShopClick}
-                className="group relative inline-flex items-center gap-3 bg-lime text-ink px-7 py-4 text-xs font-black tracking-wider uppercase border border-ink hover:bg-ink hover:text-lime transition-all duration-300 shadow-[4px_4px_0px_#111111] active:translate-x-1 active:translate-y-1 active:shadow-none"
+                className="group relative inline-flex items-center gap-3 bg-lime text-neutral-950 px-7 py-4 text-xs font-black tracking-wider uppercase border border-ink hover:bg-ink hover:text-lime transition-all duration-300 shadow-[4px_4px_0px_#111111] active:translate-x-1 active:translate-y-1 active:shadow-none"
               >
                 <span>SHOP THE DROP</span>
                 <ArrowDownRight className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
@@ -229,7 +229,7 @@ export default function Hero({ onShopClick, onLookbookClick }) {
               </motion.div>
 
               {/* Monogram Brand Mark in Corner */}
-              <div className="absolute bottom-5 right-6 text-xs font-black tracking-[4px] text-ink/75 pointer-events-none select-none">
+              <div className="absolute bottom-5 right-6 text-xs font-black tracking-[4px] text-neutral-950/80 pointer-events-none select-none">
                 LOOSR.STD
               </div>
 
@@ -263,7 +263,7 @@ export default function Hero({ onShopClick, onLookbookClick }) {
                 </div>
 
                 {/* Interactive Drag Hint */}
-                <span className="mt-4 text-[10px] font-black tracking-widest uppercase text-ink/60 bg-white/70 px-2.5 py-1 rounded border border-ink/20">
+                <span className="mt-4 text-[10px] font-black tracking-widest uppercase text-neutral-950 bg-white/90 px-2.5 py-1 rounded border border-neutral-950/20 shadow-sm">
                   Hover or Tilt
                 </span>
               </motion.div>
