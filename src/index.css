@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #111111;
+  --paper: #f5f3ef;
+  --lime: #d7ff36;
+  --muted: #77766f;
+  --line: #dedbd4;
+  --card: #fffefa;
+  --red: #a83b2e;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Custom garment clip path from LOOSR */
+.garment-clip {
+  clip-path: polygon(25% 0, 42% 0, 50% 8%, 58% 0, 75% 0, 100% 20%, 82% 39%, 72% 28%, 72% 100%, 28% 100%, 28% 28%, 18% 39%, 0 20%);
+}
+
+/* Custom hide scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hard graphic drop shadows */
+.hard-shadow {
+  filter: drop-shadow(10px 15px 0 rgba(0, 0, 0, 0.12));
+}
+
+.hard-shadow-sm {
+  filter: drop-shadow(6px 8px 0 rgba(0, 0, 0, 0.1));
+}
