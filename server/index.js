@@ -265,6 +265,58 @@ app.put('/api/cart', authenticateToken, (req, res) => {
   }
 });
 
+// 5.8 ADMIN / OWNER USERS & ORDERS DATABASE TABLES
+app.get('/api/admin/users', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    const users = db.prepare(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        u.phone, 
+        u.address, 
+        u.created_at,
+        (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) as order_count,
+        (SELECT COALESCE(SUM(o.total), 0) FROM orders o WHERE o.user_id = u.id) as total_spent
+      FROM users u
+      ORDER BY u.id DESC
+    `).all();
+
+    res.json({ users });
+  } catch (err) {
+    console.error('Fetch users table error:', err);
+    res.status(500).json({ error: 'Failed to query users database' });
+  }
+});
+
+app.get('/api/admin/orders', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+    const parsed = orders.map((o) => ({
+      ...o,
+      items: JSON.parse(o.items_json || '[]'),
+    }));
+    res.json({ orders: parsed });
+  } catch (err) {
+    console.error('Fetch orders table error:', err);
+    res.status(500).json({ error: 'Failed to query orders database' });
+  }
+});
+
 // 6. HEALTH CHECK
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'LOOSR API', timestamp: new Date().toISOString() });

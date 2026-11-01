@@ -10,6 +10,7 @@ import QuickViewModal from './components/QuickViewModal';
 import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 import ProfileModal from './components/ProfileModal';
+import UsersTableModal from './components/UsersTableModal';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 
@@ -24,6 +25,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isUsersTableOpen, setIsUsersTableOpen] = useState(false);
 
   const [toast, setToast] = useState({ message: '', isVisible: false });
   const lenisRef = useRef(null);
@@ -74,6 +76,17 @@ export default function App() {
           localStorage.removeItem('loosr_token');
         });
     }
+
+    // Check URL hash for admin/users table shortcut (#users, #admin, #database, #orders)
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (['#users', '#admin', '#database', '#orders', '#owner'].includes(hash)) {
+        setIsUsersTableOpen(true);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   // Initialize Lenis smooth scroll
@@ -275,7 +288,10 @@ export default function App() {
         />
 
         {/* Story Banner and Footer */}
-        <Footer onShopClick={() => scrollToSection('shop')} />
+        <Footer
+          onShopClick={() => scrollToSection('shop')}
+          onOpenUsersTable={() => setIsUsersTableOpen(true)}
+        />
       </main>
 
       {/* Quick View Modal */}
@@ -320,6 +336,18 @@ export default function App() {
           showToast('Profile updated!');
         }}
         onLogout={handleLogout}
+        onOpenUsersTable={() => setIsUsersTableOpen(true)}
+      />
+
+      {/* Interactive Users & Orders Database Table Modal */}
+      <UsersTableModal
+        isOpen={isUsersTableOpen}
+        onClose={() => {
+          setIsUsersTableOpen(false);
+          if (['#users', '#admin', '#database', '#orders', '#owner'].includes(window.location.hash.toLowerCase())) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }}
       />
 
       {/* Toast Notification */}

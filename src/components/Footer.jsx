@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 
-export default function Footer({ onShopClick }) {
+export default function Footer({ onShopClick, onOpenUsersTable }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -71,6 +71,14 @@ export default function Footer({ onShopClick }) {
                 <span className="text-muted text-[10px]">COMPANY</span>
                 <a href="#story" className="hover:text-lime-dark transition-colors">Manifesto</a>
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Stockists</a>
+                {onOpenUsersTable && (
+                  <button
+                    onClick={onOpenUsersTable}
+                    className="text-left hover:text-lime-dark transition-colors text-ink"
+                  >
+                    Users Table ↗
+                  </button>
+                )}
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Contact</a>
               </div>
             </div>
@@ -114,7 +122,17 @@ export default function Footer({ onShopClick }) {
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] font-black tracking-widest text-muted uppercase gap-4">
             <span>© 2026 LOOSR STUDIO</span>
             <span>MADE FOR YOUR OWN LANE.</span>
-            <span>INDIA · INR ₹</span>
+            <div className="flex items-center gap-4">
+              {onOpenUsersTable && (
+                <button
+                  onClick={onOpenUsersTable}
+                  className="hover:text-ink transition-colors underline decoration-lime underline-offset-4 cursor-pointer"
+                >
+                  DATABASE TABLE ↗
+                </button>
+              )}
+              <span>INDIA · INR ₹</span>
+            </div>
           </div>
 
         </div>

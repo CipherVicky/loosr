@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Phone, MapPin, Package, LogOut, Edit2, Check, Clock } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, Package, LogOut, Edit2, Check, Clock, Database } from 'lucide-react';
 import { rupee } from '../data/products';
 
-export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLogout }) {
+export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLogout, onOpenUsersTable }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -261,14 +261,30 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
                     </div>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-between">
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-paper text-ink text-xs font-black uppercase border border-line transition-colors"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>EDIT DETAILS</span>
-                    </button>
+                  <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-paper text-ink text-xs font-black uppercase border border-line transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>EDIT DETAILS</span>
+                      </button>
+
+                      {onOpenUsersTable && (
+                        <button
+                          onClick={() => {
+                            onClose();
+                            onOpenUsersTable();
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-ink text-lime hover:bg-lime hover:text-ink text-xs font-black uppercase border border-ink transition-colors shadow-sm"
+                          title="View customer table database (Owner passcode required)"
+                        >
+                          <Database className="w-3.5 h-3.5" />
+                          <span>USERS TABLE</span>
+                        </button>
+                      )}
+                    </div>
 
                     <button
                       onClick={onLogout}
