@@ -8,6 +8,8 @@ export default function Navbar({
   user,
   onOpenAuth,
   onOpenProfile,
+  activeTab = 'home',
+  onSelectTab,
   activeCategory,
   onSelectCategory,
   onScrollToSection,
@@ -24,20 +26,24 @@ export default function Navbar({
   }, []);
 
   const navLinks = [
-    { name: 'SHOP ALL', cat: 'All', section: 'shop' },
-    { name: '360° INSPECT', section: 'anatomy' },
-    { name: 'T-SHIRTS', cat: 'T-Shirts', section: 'shop' },
-    { name: 'HOODIES', cat: 'Hoodies', section: 'shop' },
-    { name: 'LOOKBOOK', section: 'lookbook' },
-    { name: 'OUR STORY', section: 'story' },
+    { id: 'shop', name: 'SHOP ALL', cat: 'All', section: 'shop' },
+    { id: 'anatomy', name: '360° INSPECT', section: 'anatomy' },
+    { id: 't-shirts', name: 'T-SHIRTS', cat: 'T-Shirts', section: 'shop' },
+    { id: 'hoodies', name: 'HOODIES', cat: 'Hoodies', section: 'shop' },
+    { id: 'lookbook', name: 'LOOKBOOK', section: 'lookbook' },
+    { id: 'story', name: 'OUR STORY', section: 'story' },
   ];
 
   const handleLinkClick = (link) => {
-    if (link.cat) {
-      onSelectCategory(link.cat);
-    }
-    if (link.section) {
-      onScrollToSection(link.section);
+    if (onSelectTab) {
+      onSelectTab(link.id, link.cat);
+    } else {
+      if (link.cat && onSelectCategory) {
+        onSelectCategory(link.cat);
+      }
+      if (link.section && onScrollToSection) {
+        onScrollToSection(link.section);
+      }
     }
     setMobileMenuOpen(false);
   };
@@ -60,12 +66,16 @@ export default function Navbar({
       >
         <div className="max-w-[1240px] mx-auto px-4 md:px-8 flex items-center justify-between">
           
-          {/* Brand Logo */}
+          {/* Brand Logo - click takes to Home */}
           <button
             onClick={() => {
+              if (onSelectTab) {
+                onSelectTab('home');
+              }
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             className="group flex items-center text-left"
+            title="LOOSR — Back to Home"
           >
             <span className="font-black text-2xl sm:text-3xl tracking-tighter text-ink transition-transform duration-200 group-hover:scale-105">
               LOOSR
@@ -75,28 +85,32 @@ export default function Navbar({
             </span>
           </button>
 
-          {/* Desktop Nav Links */}
+          {/* Desktop Nav Links with Sliding Underline Hover Animation */}
           <nav className="hidden md:flex items-center gap-7">
-            {navLinks.map((link) => (
-              <button
-                key={link.name}
-                onClick={() => handleLinkClick(link)}
-                className={`text-xs font-black tracking-wider transition-colors duration-200 uppercase relative py-1 ${
-                  activeCategory === link.cat
-                    ? 'text-ink font-black'
-                    : 'text-[#666] hover:text-ink'
-                }`}
-              >
-                {link.name}
-                {activeCategory === link.cat && (
-                  <motion.div
-                    layoutId="navIndicator"
-                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-lime"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </button>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeTab === link.id;
+
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleLinkClick(link)}
+                  className={`nav-sliding-underline text-xs font-black tracking-wider transition-colors duration-200 uppercase relative ${
+                    isActive
+                      ? 'text-ink font-black active'
+                      : 'text-[#666] hover:text-ink'
+                  }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabUnderline"
+                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-lime"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Nav Right CTAs: User Auth/Profile & Bag */}
@@ -109,7 +123,7 @@ export default function Navbar({
                 className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-black tracking-wider uppercase border border-ink bg-white hover:bg-ink hover:text-white transition-all duration-200 shadow-[2px_2px_0px_#111111]"
                 title="View your profile and past orders"
               >
-                <div className="w-4 h-4 rounded-full bg-lime text-ink flex items-center justify-center text-[9px] font-black">
+                <div className="w-4 h-4 rounded-full bg-lime text-neutral-950 flex items-center justify-center text-[9px] font-black">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden sm:inline truncate max-w-[100px]">
@@ -127,11 +141,11 @@ export default function Navbar({
               </button>
             )}
 
-            {/* Shopping Bag Button */}
+            {/* Shopping Bag Button with Instant Open Checkout Drawer */}
             <motion.button
               onClick={onOpenCart}
               whileTap={{ scale: 0.94 }}
-              className="relative inline-flex items-center gap-2 bg-lime text-ink px-4 py-2 sm:px-4 sm:py-2 text-xs font-black tracking-wider uppercase border border-ink hover:bg-ink hover:text-lime transition-colors duration-200 shadow-[3px_3px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="relative inline-flex items-center gap-2 bg-lime text-neutral-950 px-4 py-2 sm:px-4 sm:py-2 text-xs font-black tracking-wider uppercase border border-ink hover:bg-ink hover:text-lime transition-colors duration-200 shadow-[3px_3px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>BAG</span>
@@ -142,7 +156,7 @@ export default function Navbar({
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.5, opacity: 0 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  className="bg-ink text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black group-hover:bg-lime group-hover:text-ink"
+                  className="bg-neutral-950 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black group-hover:bg-lime group-hover:text-neutral-950"
                 >
                   {cartCount}
                 </motion.span>
@@ -171,22 +185,39 @@ export default function Navbar({
               exit={{ height: 0, opacity: 0 }}
               className="md:hidden border-t border-line bg-paper px-6 py-4 flex flex-col gap-3 overflow-hidden"
             >
+              <button
+                onClick={() => {
+                  if (onSelectTab) onSelectTab('home');
+                  setMobileMenuOpen(false);
+                }}
+                className={`text-left text-xs font-black tracking-wider py-2 border-b border-line/60 flex items-center justify-between ${
+                  activeTab === 'home' ? 'text-lime-dark font-black' : 'text-ink'
+                }`}
+              >
+                <span>HOME (ALL-IN-ONE)</span>
+                {activeTab === 'home' && <span className="w-2 h-2 rounded-full bg-lime"></span>}
+              </button>
+
               {navLinks.map((link) => (
                 <button
-                  key={link.name}
+                  key={link.id}
                   onClick={() => handleLinkClick(link)}
-                  className="text-left text-xs font-black tracking-wider text-ink py-2 border-b border-line/60"
+                  className={`text-left text-xs font-black tracking-wider py-2 border-b border-line/60 flex items-center justify-between ${
+                    activeTab === link.id ? 'text-lime-dark font-black' : 'text-ink'
+                  }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {activeTab === link.id && <span className="w-2 h-2 rounded-full bg-lime"></span>}
                 </button>
               ))}
+
               {user ? (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     onOpenProfile();
                   }}
-                  className="text-left text-xs font-black tracking-wider text-lime-dark py-2 flex items-center gap-2"
+                  className="text-left text-xs font-black tracking-wider text-lime-dark py-2 flex items-center gap-2 border-t border-line/60 pt-3"
                 >
                   <User className="w-4 h-4" />
                   <span>PROFILE ({user.name})</span>
@@ -197,7 +228,7 @@ export default function Navbar({
                     setMobileMenuOpen(false);
                     onOpenAuth();
                   }}
-                  className="text-left text-xs font-black tracking-wider text-ink py-2 flex items-center gap-2"
+                  className="text-left text-xs font-black tracking-wider text-ink py-2 flex items-center gap-2 border-t border-line/60 pt-3"
                 >
                   <User className="w-4 h-4" />
                   <span>LOGIN / REGISTER</span>

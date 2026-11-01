@@ -11,11 +11,16 @@ import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 import ProfileModal from './components/ProfileModal';
 import AdminPage from './pages/AdminPage';
+import ShopPage from './pages/ShopPage';
+import Inspect360Page from './pages/Inspect360Page';
+import LookbookPage from './pages/LookbookPage';
+import StoryPage from './pages/StoryPage';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'shop', 'anatomy', 't-shirts', 'hoodies', 'lookbook', 'story'
   const [products, setProducts] = useState(initialProducts);
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -37,6 +42,44 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Sync activeTab with URL hash
+  useEffect(() => {
+    const syncFromHash = () => {
+      const rawHash = window.location.hash.toLowerCase().replace('#', '');
+      if (['admin', 'users', 'database', 'orders', 'owner'].includes(rawHash)) {
+        window.history.replaceState(null, '', '/admin');
+        setCurrentPath('/admin');
+        return;
+      }
+      if (['shop', 'anatomy', '360', 't-shirts', 'hoodies', 'lookbook', 'story'].includes(rawHash)) {
+        const mappedTab = rawHash === '360' ? 'anatomy' : rawHash;
+        setActiveTab(mappedTab);
+        if (rawHash === 't-shirts') setActiveCategory('T-Shirts');
+        else if (rawHash === 'hoodies') setActiveCategory('Hoodies');
+        else if (rawHash === 'shop') setActiveCategory('All');
+      } else if (rawHash === '' || rawHash === 'home') {
+        setActiveTab('home');
+      }
+    };
+
+    syncFromHash();
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  const handleSelectTab = (tabId, category) => {
+    setActiveTab(tabId);
+    if (category) {
+      setActiveCategory(category);
+    }
+    if (tabId === 'home') {
+      window.history.pushState(null, '', window.location.pathname);
+    } else {
+      window.location.hash = tabId;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const navigateToAdmin = () => {
     window.history.pushState({}, '', '/admin');
     setCurrentPath('/admin');
@@ -45,6 +88,7 @@ export default function App() {
   const navigateToHome = () => {
     window.history.pushState({}, '', '/');
     setCurrentPath('/');
+    setActiveTab('home');
   };
 
   // Helper to sync cart with database for logged-in user
@@ -93,18 +137,6 @@ export default function App() {
           localStorage.removeItem('loosr_token');
         });
     }
-
-    // Check URL hash for admin/users table shortcut (#admin, #users) and redirect to /admin
-    const handleHash = () => {
-      const hash = window.location.hash.toLowerCase();
-      if (['#admin', '#users', '#database', '#orders', '#owner'].includes(hash)) {
-        window.history.replaceState(null, '', '/admin');
-        setCurrentPath('/admin');
-      }
-    };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   // Initialize Lenis smooth scroll
@@ -246,6 +278,10 @@ export default function App() {
   };
 
   const scrollToSection = (sectionId) => {
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+      window.location.hash = '';
+    }
     setTimeout(() => {
       const el = document.getElementById(sectionId);
       if (el) {
@@ -255,7 +291,7 @@ export default function App() {
           el.scrollIntoView({ behavior: 'smooth' });
         }
       }
-    }, 100);
+    }, 120);
   };
 
   const cartTotalCount = cart.reduce((acc, item) => acc + item.qty, 0);
@@ -266,52 +302,166 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-paper text-ink selection:bg-lime selection:text-ink">
-      {/* Top Navbar */}
+    <div className="min-h-screen flex flex-col bg-paper text-ink selection:bg-lime selection:text-neutral-950 transition-colors duration-200">
+      {/* Top Navbar with Sliding Underline Hover Animation */}
       <Navbar
         cartCount={cartTotalCount}
         onOpenCart={() => setIsCartOpen(true)}
         user={user}
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
         activeCategory={activeCategory}
         onSelectCategory={(cat) => {
           setActiveCategory(cat);
-          scrollToSection('shop');
+          handleSelectTab('shop', cat);
         }}
         onScrollToSection={scrollToSection}
       />
 
-      {/* Main Content Area */}
+      {/* Sub-Header Breadcrumb Bar for Dedicated Section Pages */}
+      {activeTab !== 'home' && (
+        <div className="bg-white border-b border-line py-2.5 px-4 md:px-8">
+          <div className="max-w-[1240px] mx-auto flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 font-black uppercase tracking-wider text-muted">
+              <button
+                onClick={() => handleSelectTab('home')}
+                className="hover:text-ink flex items-center gap-1 transition-colors"
+              >
+                HOME
+              </button>
+              <span>/</span>
+              <span className="text-ink">
+                {activeTab === 'anatomy' ? '360° INSPECT' : activeTab.toUpperCase()}
+              </span>
+            </div>
+            <button
+              onClick={() => handleSelectTab('home')}
+              className="text-[11px] font-black uppercase text-muted hover:text-ink flex items-center gap-1 transition-colors"
+            >
+              <span>← RETURN TO FULL STORE</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area: Tab-Based Dedicated Pages */}
       <main className="flex-1">
-        {/* Hero with Kinetic Typography and 3D Canvas Parallax */}
-        <Hero
-          onShopClick={() => scrollToSection('shop')}
-          onLookbookClick={() => scrollToSection('lookbook')}
-        />
+        {activeTab === 'home' && (
+          <>
+            {/* Hero with Kinetic Typography and 3D Canvas Parallax */}
+            <Hero
+              onShopClick={() => handleSelectTab('shop', 'All')}
+              onLookbookClick={() => handleSelectTab('lookbook')}
+            />
 
-        {/* 3D Scroll-Driven Interactive Rotating T-Shirt Anatomy */}
-        <ScrollShowcase onAddToCart={handleAddToCart} />
+            {/* 3D Scroll-Driven Interactive Rotating T-Shirt Anatomy */}
+            <ScrollShowcase onAddToCart={handleAddToCart} />
 
-        {/* Curated Product Showcase */}
-        <ProductGrid
-          products={products}
-          activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
-          onAddToCart={handleAddToCart}
-          onOpenQuickView={(p) => setQuickViewProduct(p)}
-        />
+            {/* Curated Product Showcase */}
+            <ProductGrid
+              products={products}
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+              onAddToCart={handleAddToCart}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+            />
 
-        {/* Interactive Lookbook Gallery */}
-        <Lookbook
-          onShopCategory={(cat) => {
-            setActiveCategory(cat);
-            scrollToSection('shop');
-          }}
-        />
+            {/* Interactive Lookbook Gallery */}
+            <Lookbook
+              onShopCategory={(cat) => {
+                setActiveCategory(cat);
+                handleSelectTab('shop', cat);
+              }}
+            />
 
-        {/* Story Banner and Footer */}
-        <Footer onShopClick={() => scrollToSection('shop')} />
+            {/* Story Banner and Footer */}
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: SHOP ALL */}
+        {activeTab === 'shop' && (
+          <>
+            <ShopPage
+              products={products}
+              categoryFilter={activeCategory}
+              onSelectCategory={setActiveCategory}
+              onAddToCart={handleAddToCart}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+              onInspect3D={() => handleSelectTab('anatomy')}
+              onOpenCart={() => setIsCartOpen(true)}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: T-SHIRTS */}
+        {activeTab === 't-shirts' && (
+          <>
+            <ShopPage
+              products={products}
+              categoryFilter="T-Shirts"
+              onSelectCategory={setActiveCategory}
+              onAddToCart={handleAddToCart}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+              onInspect3D={() => handleSelectTab('anatomy')}
+              onOpenCart={() => setIsCartOpen(true)}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: HOODIES */}
+        {activeTab === 'hoodies' && (
+          <>
+            <ShopPage
+              products={products}
+              categoryFilter="Hoodies"
+              onSelectCategory={setActiveCategory}
+              onAddToCart={handleAddToCart}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+              onInspect3D={() => handleSelectTab('anatomy')}
+              onOpenCart={() => setIsCartOpen(true)}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: 360° INSPECT */}
+        {activeTab === 'anatomy' && (
+          <>
+            <Inspect360Page
+              onAddToCart={handleAddToCart}
+              onOpenCart={() => setIsCartOpen(true)}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: LOOKBOOK */}
+        {activeTab === 'lookbook' && (
+          <>
+            <LookbookPage
+              onAddToCart={handleAddToCart}
+              onOpenCart={() => setIsCartOpen(true)}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
+
+        {/* Dedicated Page / Tab: OUR STORY */}
+        {activeTab === 'story' && (
+          <>
+            <StoryPage
+              onGoToShop={() => handleSelectTab('shop', 'All')}
+              onInspect3D={() => handleSelectTab('anatomy')}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+          </>
+        )}
       </main>
 
       {/* Quick View Modal */}
