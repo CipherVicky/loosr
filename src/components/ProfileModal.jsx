@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Mail, Phone, MapPin, Package, LogOut, Edit2, Check, Clock, Database } from 'lucide-react';
 import { rupee } from '../data/products';
 
-export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLogout, onOpenUsersTable }) {
+export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLogout, onNavigateAdmin }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -271,17 +271,17 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
                         <span>EDIT DETAILS</span>
                       </button>
 
-                      {onOpenUsersTable && (
+                      {onNavigateAdmin && (
                         <button
                           onClick={() => {
                             onClose();
-                            onOpenUsersTable();
+                            onNavigateAdmin();
                           }}
                           className="inline-flex items-center gap-1.5 px-3 py-2 bg-ink text-lime hover:bg-lime hover:text-ink text-xs font-black uppercase border border-ink transition-colors shadow-sm"
-                          title="View customer table database (Owner passcode required)"
+                          title="Open standalone Admin Portal (Endpoint: /admin)"
                         >
                           <Database className="w-3.5 h-3.5" />
-                          <span>USERS TABLE</span>
+                          <span>ADMIN PORTAL ↗</span>
                         </button>
                       )}
                     </div>

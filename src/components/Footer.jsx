@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 
-export default function Footer({ onShopClick, onOpenUsersTable }) {
+export default function Footer({ onShopClick, onNavigateAdmin }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -71,12 +71,12 @@ export default function Footer({ onShopClick, onOpenUsersTable }) {
                 <span className="text-muted text-[10px]">COMPANY</span>
                 <a href="#story" className="hover:text-lime-dark transition-colors">Manifesto</a>
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Stockists</a>
-                {onOpenUsersTable && (
+                {onNavigateAdmin && (
                   <button
-                    onClick={onOpenUsersTable}
-                    className="text-left hover:text-lime-dark transition-colors text-ink"
+                    onClick={onNavigateAdmin}
+                    className="text-left hover:text-lime-dark transition-colors text-ink flex items-center gap-1 font-bold"
                   >
-                    Users Table ↗
+                    Admin Portal ↗
                   </button>
                 )}
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Contact</a>
@@ -123,12 +123,12 @@ export default function Footer({ onShopClick, onOpenUsersTable }) {
             <span>© 2026 LOOSR STUDIO</span>
             <span>MADE FOR YOUR OWN LANE.</span>
             <div className="flex items-center gap-4">
-              {onOpenUsersTable && (
+              {onNavigateAdmin && (
                 <button
-                  onClick={onOpenUsersTable}
-                  className="hover:text-ink transition-colors underline decoration-lime underline-offset-4 cursor-pointer"
+                  onClick={onNavigateAdmin}
+                  className="hover:text-ink transition-colors underline decoration-lime underline-offset-4 cursor-pointer font-mono"
                 >
-                  DATABASE TABLE ↗
+                  ADMIN / PRO CONSOLE ↗
                 </button>
               )}
               <span>INDIA · INR ₹</span>

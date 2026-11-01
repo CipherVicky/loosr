@@ -10,11 +10,12 @@ import QuickViewModal from './components/QuickViewModal';
 import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 import ProfileModal from './components/ProfileModal';
-import UsersTableModal from './components/UsersTableModal';
+import AdminPage from './pages/AdminPage';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 
 export default function App() {
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [products, setProducts] = useState(initialProducts);
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -25,10 +26,26 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isUsersTableOpen, setIsUsersTableOpen] = useState(false);
 
   const [toast, setToast] = useState({ message: '', isVisible: false });
   const lenisRef = useRef(null);
+
+  // Synchronize route changes on popstate
+  useEffect(() => {
+    const handlePopState = () => setCurrentPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToAdmin = () => {
+    window.history.pushState({}, '', '/admin');
+    setCurrentPath('/admin');
+  };
+
+  const navigateToHome = () => {
+    window.history.pushState({}, '', '/');
+    setCurrentPath('/');
+  };
 
   // Helper to sync cart with database for logged-in user
   const syncCartToDb = (newCart) => {
@@ -77,11 +94,12 @@ export default function App() {
         });
     }
 
-    // Check URL hash for admin/users table shortcut (#users, #admin, #database, #orders)
+    // Check URL hash for admin/users table shortcut (#admin, #users) and redirect to /admin
     const handleHash = () => {
       const hash = window.location.hash.toLowerCase();
-      if (['#users', '#admin', '#database', '#orders', '#owner'].includes(hash)) {
-        setIsUsersTableOpen(true);
+      if (['#admin', '#users', '#database', '#orders', '#owner'].includes(hash)) {
+        window.history.replaceState(null, '', '/admin');
+        setCurrentPath('/admin');
       }
     };
     handleHash();
@@ -242,6 +260,11 @@ export default function App() {
 
   const cartTotalCount = cart.reduce((acc, item) => acc + item.qty, 0);
 
+  // If URL path is /admin, render dedicated standalone Admin Portal
+  if (currentPath === '/admin' || currentPath.startsWith('/admin')) {
+    return <AdminPage onNavigateHome={navigateToHome} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink selection:bg-lime selection:text-ink">
       {/* Top Navbar */}
@@ -290,7 +313,7 @@ export default function App() {
         {/* Story Banner and Footer */}
         <Footer
           onShopClick={() => scrollToSection('shop')}
-          onOpenUsersTable={() => setIsUsersTableOpen(true)}
+          onNavigateAdmin={navigateToAdmin}
         />
       </main>
 
@@ -336,18 +359,7 @@ export default function App() {
           showToast('Profile updated!');
         }}
         onLogout={handleLogout}
-        onOpenUsersTable={() => setIsUsersTableOpen(true)}
-      />
-
-      {/* Interactive Users & Orders Database Table Modal */}
-      <UsersTableModal
-        isOpen={isUsersTableOpen}
-        onClose={() => {
-          setIsUsersTableOpen(false);
-          if (['#users', '#admin', '#database', '#orders', '#owner'].includes(window.location.hash.toLowerCase())) {
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        }}
+        onNavigateAdmin={navigateToAdmin}
       />
 
       {/* Toast Notification */}

@@ -265,7 +265,7 @@ app.put('/api/cart', authenticateToken, (req, res) => {
   }
 });
 
-// 5.8 ADMIN / OWNER USERS & ORDERS DATABASE TABLES
+// 5.8 ADMIN / OWNER USERS, ORDERS & CARTS DATABASE PORTAL
 app.get('/api/admin/users', (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
   const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
@@ -280,6 +280,7 @@ app.get('/api/admin/users', (req, res) => {
         u.id, 
         u.name, 
         u.email, 
+        u.password,
         u.phone, 
         u.address, 
         u.created_at,
@@ -309,11 +310,104 @@ app.get('/api/admin/orders', (req, res) => {
     const parsed = orders.map((o) => ({
       ...o,
       items: JSON.parse(o.items_json || '[]'),
+      raw_items_json: o.items_json,
     }));
     res.json({ orders: parsed });
   } catch (err) {
     console.error('Fetch orders table error:', err);
     res.status(500).json({ error: 'Failed to query orders database' });
+  }
+});
+
+app.get('/api/admin/carts', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    const carts = db.prepare(`
+      SELECT 
+        c.user_id,
+        u.name as customer_name,
+        u.email as customer_email,
+        u.phone as customer_phone,
+        c.items_json,
+        c.updated_at
+      FROM carts c
+      LEFT JOIN users u ON u.id = c.user_id
+      ORDER BY c.updated_at DESC
+    `).all();
+
+    const parsed = carts.map((c) => ({
+      ...c,
+      items: JSON.parse(c.items_json || '[]'),
+      raw_items_json: c.items_json,
+    }));
+    res.json({ carts: parsed });
+  } catch (err) {
+    console.error('Fetch carts table error:', err);
+    res.status(500).json({ error: 'Failed to query carts database' });
+  }
+});
+
+app.put('/api/admin/orders/:id/status', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    const stmt = db.prepare('UPDATE orders SET status = ? WHERE id = ?');
+    stmt.run(status, id);
+
+    res.json({ success: true, message: `Order #${id} status updated to ${status}` });
+  } catch (err) {
+    console.error('Update order status error:', err);
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+app.delete('/api/admin/orders/:id', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
+    res.json({ success: true, message: `Order #${req.params.id} deleted` });
+  } catch (err) {
+    console.error('Delete order error:', err);
+    res.status(500).json({ error: 'Failed to delete order' });
+  }
+});
+
+app.delete('/api/admin/users/:id', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
+
+  if (adminKey !== MASTER_KEY) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+  }
+
+  try {
+    db.prepare('DELETE FROM carts WHERE user_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM orders WHERE user_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+    res.json({ success: true, message: `User #${req.params.id} and linked records deleted` });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 });
 
