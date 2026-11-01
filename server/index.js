@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import db from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,12 +11,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'loosr_ultra_secret_jwt_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'loosr_heavyweight_streetwear_2026_secret_key';
 
 app.use(cors());
 app.use(express.json());
 
-// Auth Middleware
+// Auth middleware for user profile endpoints
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -34,8 +34,15 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Admin authentication helper (accepts loosr2026, admin, loosr, vicky or custom env key)
+const isAdminAuthorized = (req) => {
+  const key = (req.headers['x-admin-key'] || req.query.key || '').trim().toLowerCase();
+  const MASTER_KEY = (process.env.ADMIN_KEY || 'loosr2026').toLowerCase();
+  return key === MASTER_KEY || key === 'admin' || key === 'loosr' || key === 'vicky' || key === 'loosr2026';
+};
+
 // 1. REGISTER
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
@@ -46,7 +53,7 @@ app.post('/api/auth/register', (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if email already exists
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(normalizedEmail);
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [normalizedEmail]);
     if (existing) {
       return res.status(400).json({ error: 'An account with this email already exists' });
     }
@@ -54,18 +61,18 @@ app.post('/api/auth/register', (req, res) => {
     // Hash password
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    const insert = db.prepare(`
+    const insertSql = `
       INSERT INTO users (name, email, password, phone, address)
       VALUES (?, ?, ?, ?, ?)
-    `);
+    `;
 
-    const result = insert.run(
+    const result = await db.run(insertSql, [
       name.trim(),
       normalizedEmail,
       hashedPassword,
       phone ? phone.trim() : '',
-      address ? address.trim() : ''
-    );
+      address ? address.trim() : '',
+    ]);
 
     const newUser = {
       id: result.lastInsertRowid,
@@ -91,7 +98,7 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // 2. LOGIN
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -100,7 +107,7 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
+    const user = await db.get('SELECT * FROM users WHERE email = ?', [normalizedEmail]);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -136,14 +143,14 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // 3. GET CURRENT USER PROFILE & ORDERS
-app.get('/api/auth/me', authenticateToken, (req, res) => {
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
-    const user = db.prepare('SELECT id, name, email, phone, address, created_at FROM users WHERE id = ?').get(req.user.id);
+    const user = await db.get('SELECT id, name, email, phone, address, created_at FROM users WHERE id = ?', [req.user.id]);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC').all(user.id);
+    const orders = await db.all('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC', [user.id]);
     const parsedOrders = orders.map((o) => ({
       ...o,
       items: JSON.parse(o.items_json || '[]'),
@@ -167,26 +174,26 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 });
 
 // 4. UPDATE USER PROFILE (Name, Phone, Address)
-app.put('/api/user/profile', authenticateToken, (req, res) => {
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
   try {
     const { name, phone, address } = req.body;
 
-    const update = db.prepare(`
+    const updateSql = `
       UPDATE users
       SET name = COALESCE(?, name),
           phone = COALESCE(?, phone),
           address = COALESCE(?, address)
       WHERE id = ?
-    `);
+    `;
 
-    update.run(
+    await db.run(updateSql, [
       name ? name.trim() : null,
       phone ? phone.trim() : null,
       address ? address.trim() : null,
-      req.user.id
-    );
+      req.user.id,
+    ]);
 
-    const updatedUser = db.prepare('SELECT id, name, email, phone, address, created_at FROM users WHERE id = ?').get(req.user.id);
+    const updatedUser = await db.get('SELECT id, name, email, phone, address, created_at FROM users WHERE id = ?', [req.user.id]);
 
     res.json({
       user: updatedUser,
@@ -199,17 +206,17 @@ app.put('/api/user/profile', authenticateToken, (req, res) => {
 });
 
 // 5. CREATE ORDER
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   try {
     const { userId, orderNumber, customerName, customerEmail, customerPhone, deliveryAddress, total, paymentMethod, items } = req.body;
 
     const orderNo = orderNumber || `LS-${Date.now().toString().slice(-6)}`;
-    const insert = db.prepare(`
+    const insertSql = `
       INSERT INTO orders (user_id, order_number, customer_name, customer_email, customer_phone, delivery_address, total, payment_method, items_json)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    `;
 
-    const result = insert.run(
+    const result = await db.run(insertSql, [
       userId || null,
       orderNo,
       customerName || 'Customer',
@@ -218,8 +225,8 @@ app.post('/api/orders', (req, res) => {
       deliveryAddress || '',
       total || 0,
       paymentMethod || 'cod',
-      JSON.stringify(items || [])
-    );
+      JSON.stringify(items || []),
+    ]);
 
     res.status(201).json({
       id: result.lastInsertRowid,
@@ -233,9 +240,9 @@ app.post('/api/orders', (req, res) => {
 });
 
 // 5.5 USER CART PERSISTENCE (GET & SYNC CART IN DATABASE)
-app.get('/api/cart', authenticateToken, (req, res) => {
+app.get('/api/cart', authenticateToken, async (req, res) => {
   try {
-    const row = db.prepare('SELECT items_json FROM carts WHERE user_id = ?').get(req.user.id);
+    const row = await db.get('SELECT items_json FROM carts WHERE user_id = ?', [req.user.id]);
     const cart = row ? JSON.parse(row.items_json || '[]') : [];
     res.json({ cart });
   } catch (error) {
@@ -244,20 +251,20 @@ app.get('/api/cart', authenticateToken, (req, res) => {
   }
 });
 
-app.put('/api/cart', authenticateToken, (req, res) => {
+app.put('/api/cart', authenticateToken, async (req, res) => {
   try {
     const { cart } = req.body;
     const itemsJson = JSON.stringify(cart || []);
 
-    const upsert = db.prepare(`
+    const upsertSql = `
       INSERT INTO carts (user_id, items_json, updated_at)
       VALUES (?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(user_id) DO UPDATE SET
         items_json = excluded.items_json,
         updated_at = CURRENT_TIMESTAMP
-    `);
+    `;
 
-    upsert.run(req.user.id, itemsJson);
+    await db.run(upsertSql, [req.user.id, itemsJson]);
     res.json({ success: true, count: (cart || []).length });
   } catch (error) {
     console.error('Save cart error:', error);
@@ -266,16 +273,13 @@ app.put('/api/cart', authenticateToken, (req, res) => {
 });
 
 // 5.8 ADMIN / OWNER USERS, ORDERS & CARTS DATABASE PORTAL
-app.get('/api/admin/users', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.get('/api/admin/users', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
-    const users = db.prepare(`
+    const users = await db.all(`
       SELECT 
         u.id, 
         u.name, 
@@ -288,7 +292,7 @@ app.get('/api/admin/users', (req, res) => {
         (SELECT COALESCE(SUM(o.total), 0) FROM orders o WHERE o.user_id = u.id) as total_spent
       FROM users u
       ORDER BY u.id DESC
-    `).all();
+    `);
 
     res.json({ users });
   } catch (err) {
@@ -297,16 +301,13 @@ app.get('/api/admin/users', (req, res) => {
   }
 });
 
-app.get('/api/admin/orders', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.get('/api/admin/orders', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
-    const orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+    const orders = await db.all('SELECT * FROM orders ORDER BY created_at DESC');
     const parsed = orders.map((o) => ({
       ...o,
       items: JSON.parse(o.items_json || '[]'),
@@ -319,16 +320,13 @@ app.get('/api/admin/orders', (req, res) => {
   }
 });
 
-app.get('/api/admin/carts', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.get('/api/admin/carts', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
-    const carts = db.prepare(`
+    const carts = await db.all(`
       SELECT 
         c.user_id,
         u.name as customer_name,
@@ -339,7 +337,7 @@ app.get('/api/admin/carts', (req, res) => {
       FROM carts c
       LEFT JOIN users u ON u.id = c.user_id
       ORDER BY c.updated_at DESC
-    `).all();
+    `);
 
     const parsed = carts.map((c) => ({
       ...c,
@@ -353,21 +351,16 @@ app.get('/api/admin/carts', (req, res) => {
   }
 });
 
-app.put('/api/admin/orders/:id/status', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.put('/api/admin/orders/:id/status', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
     const { status } = req.body;
     const { id } = req.params;
 
-    const stmt = db.prepare('UPDATE orders SET status = ? WHERE id = ?');
-    stmt.run(status, id);
-
+    await db.run('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
     res.json({ success: true, message: `Order #${id} status updated to ${status}` });
   } catch (err) {
     console.error('Update order status error:', err);
@@ -375,16 +368,13 @@ app.put('/api/admin/orders/:id/status', (req, res) => {
   }
 });
 
-app.delete('/api/admin/orders/:id', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.delete('/api/admin/orders/:id', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
-    db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM orders WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: `Order #${req.params.id} deleted` });
   } catch (err) {
     console.error('Delete order error:', err);
@@ -392,18 +382,15 @@ app.delete('/api/admin/orders/:id', (req, res) => {
   }
 });
 
-app.delete('/api/admin/users/:id', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.key;
-  const MASTER_KEY = process.env.ADMIN_KEY || 'loosr2026';
-
-  if (adminKey !== MASTER_KEY) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid master passcode' });
+app.delete('/api/admin/users/:id', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
   }
 
   try {
-    db.prepare('DELETE FROM carts WHERE user_id = ?').run(req.params.id);
-    db.prepare('DELETE FROM orders WHERE user_id = ?').run(req.params.id);
-    db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+    await db.run('DELETE FROM carts WHERE user_id = ?', [req.params.id]);
+    await db.run('DELETE FROM orders WHERE user_id = ?', [req.params.id]);
+    await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: `User #${req.params.id} and linked records deleted` });
   } catch (err) {
     console.error('Delete user error:', err);
@@ -413,7 +400,12 @@ app.delete('/api/admin/users/:id', (req, res) => {
 
 // 6. HEALTH CHECK
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'LOOSR API', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'LOOSR API',
+    database: db.isPostgres ? 'PostgreSQL' : 'SQLite',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // 7. SERVE STATIC FRONTEND ON RENDER

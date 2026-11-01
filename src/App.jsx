@@ -262,7 +262,7 @@ export default function App() {
 
   // If URL path is /admin, render dedicated standalone Admin Portal
   if (currentPath === '/admin' || currentPath.startsWith('/admin')) {
-    return <AdminPage onNavigateHome={navigateToHome} />;
+    return <AdminPage />;
   }
 
   return (
@@ -311,10 +311,7 @@ export default function App() {
         />
 
         {/* Story Banner and Footer */}
-        <Footer
-          onShopClick={() => scrollToSection('shop')}
-          onNavigateAdmin={navigateToAdmin}
-        />
+        <Footer onShopClick={() => scrollToSection('shop')} />
       </main>
 
       {/* Quick View Modal */}
@@ -359,7 +356,6 @@ export default function App() {
           showToast('Profile updated!');
         }}
         onLogout={handleLogout}
-        onNavigateAdmin={navigateToAdmin}
       />
 
       {/* Toast Notification */}

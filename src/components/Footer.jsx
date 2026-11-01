@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 
-export default function Footer({ onShopClick, onNavigateAdmin }) {
+export default function Footer({ onShopClick }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -71,14 +71,6 @@ export default function Footer({ onShopClick, onNavigateAdmin }) {
                 <span className="text-muted text-[10px]">COMPANY</span>
                 <a href="#story" className="hover:text-lime-dark transition-colors">Manifesto</a>
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Stockists</a>
-                {onNavigateAdmin && (
-                  <button
-                    onClick={onNavigateAdmin}
-                    className="text-left hover:text-lime-dark transition-colors text-ink flex items-center gap-1 font-bold"
-                  >
-                    Admin Portal ↗
-                  </button>
-                )}
                 <a href="#shop" className="hover:text-lime-dark transition-colors">Contact</a>
               </div>
             </div>
@@ -122,17 +114,7 @@ export default function Footer({ onShopClick, onNavigateAdmin }) {
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] font-black tracking-widest text-muted uppercase gap-4">
             <span>© 2026 LOOSR STUDIO</span>
             <span>MADE FOR YOUR OWN LANE.</span>
-            <div className="flex items-center gap-4">
-              {onNavigateAdmin && (
-                <button
-                  onClick={onNavigateAdmin}
-                  className="hover:text-ink transition-colors underline decoration-lime underline-offset-4 cursor-pointer font-mono"
-                >
-                  ADMIN / PRO CONSOLE ↗
-                </button>
-              )}
-              <span>INDIA · INR ₹</span>
-            </div>
+            <span>INDIA · INR ₹</span>
           </div>
 
         </div>

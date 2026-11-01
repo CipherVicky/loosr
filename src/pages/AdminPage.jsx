@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { rupee } from '../data/products';
 
-export default function AdminPage({ onNavigateHome }) {
+export default function AdminPage() {
   const [passcode, setPasscode] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [error, setError] = useState('');
@@ -288,13 +288,9 @@ export default function AdminPage({ onNavigateHome }) {
                 ADMIN CONSOLE
               </span>
             </div>
-            <button
-              onClick={onNavigateHome}
-              className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 font-mono transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Store</span>
-            </button>
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+              SYSTEM LOCKED
+            </span>
           </div>
 
           <div className="w-12 h-12 rounded-none bg-[#18181b] border border-[#3f3f46] flex items-center justify-center mx-auto mb-4 text-[#d7ff36]">
@@ -305,7 +301,7 @@ export default function AdminPage({ onNavigateHome }) {
             PRO ACCESS TERMINAL
           </h1>
           <p className="text-xs text-neutral-400 text-center mt-1.5 mb-6">
-            Enter master administrative key to monitor live users, orders & SQLite database records.
+            Enter administrative credentials to monitor live users, orders & database records.
           </p>
 
           {error && (
@@ -317,16 +313,15 @@ export default function AdminPage({ onNavigateHome }) {
           <form onSubmit={handleUnlock} className="space-y-4">
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-400 mb-1.5">
-                MASTER ADMIN PASSCODE
+                USERNAME
               </label>
               <input
-                type="password"
+                type="text"
                 required
                 autoFocus
-                placeholder="Enter passcode (loosr2026)"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                className="w-full bg-[#18181b] border border-[#3f3f46] text-white p-3 text-sm font-mono tracking-widest text-center focus:outline-none focus:border-[#d7ff36] transition-colors"
+                className="w-full bg-[#18181b] border border-[#3f3f46] text-white p-3 text-sm font-mono tracking-wider text-center focus:outline-none focus:border-[#d7ff36] transition-colors"
               />
             </div>
 
@@ -381,7 +376,7 @@ export default function AdminPage({ onNavigateHome }) {
             />
           </div>
 
-          {/* Quick Actions & Exit */}
+          {/* Quick Actions & Lock */}
           <div className="flex items-center gap-2 self-end md:self-center">
             <button
               onClick={() => fetchAllData(passcode)}
@@ -390,14 +385,6 @@ export default function AdminPage({ onNavigateHome }) {
               title="Refresh live database data"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#d7ff36]' : ''}`} />
-            </button>
-
-            <button
-              onClick={onNavigateHome}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-xs font-mono text-neutral-300 hover:text-white transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>STOREFRONT ↗</span>
             </button>
 
             <button
