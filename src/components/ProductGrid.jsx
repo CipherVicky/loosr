@@ -39,8 +39,8 @@ export default function ProductGrid({
                 onClick={() => onSelectCategory(cat)}
                 className={`relative px-4 py-2 text-xs font-black tracking-wider uppercase rounded-full transition-all duration-200 border whitespace-nowrap ${
                   activeCategory === cat
-                    ? 'bg-ink text-white border-ink shadow-sm'
-                    : 'bg-white/80 text-ink border-line hover:border-ink hover:bg-white'
+                    ? 'bg-ink text-paper border-ink shadow-sm'
+                    : 'bg-card text-ink border-line hover:border-ink hover:bg-paper'
                 }`}
               >
                 {cat}

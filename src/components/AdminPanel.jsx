@@ -73,7 +73,7 @@ export default function AdminPanel({
 
           <button
             onClick={onBackToStore}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-ink text-white hover:bg-lime hover:text-neutral-950 text-xs font-black tracking-wider uppercase border border-ink transition-colors shadow-[3px_3px_0px_#111111]"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-neutral-950 text-white hover:bg-lime hover:text-neutral-950 text-xs font-black tracking-wider uppercase border border-ink transition-colors shadow-[3px_3px_0px_#111111]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>BACK TO STOREFRONT</span>
@@ -276,7 +276,7 @@ export default function AdminPanel({
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-ink hover:bg-lime hover:text-neutral-950 text-white text-xs font-black tracking-widest uppercase border border-ink transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-neutral-950 hover:bg-lime hover:text-neutral-950 text-white text-xs font-black tracking-widest uppercase border border-ink transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ PUBLISH TO STORE</span>

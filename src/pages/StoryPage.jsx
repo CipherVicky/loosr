@@ -143,8 +143,8 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
 
       {/* Final Callout Banner */}
       <section className="max-w-[1240px] mx-auto px-4 md:px-8 mt-16 text-center">
-        <div className="bg-ink text-white p-8 md:p-12 border border-ink flex flex-col items-center">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
+        <div className="bg-neutral-950 text-white p-8 md:p-12 border border-neutral-800 flex flex-col items-center shadow-[6px_6px_0px_#111111]">
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white">
             EXPERIENCE THE LOOSR FIT
           </h2>
           <p className="text-xs md:text-sm text-neutral-300 max-w-lg mt-3">
@@ -152,7 +152,7 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
           </p>
           <button
             onClick={onGoToShop}
-            className="mt-6 px-8 py-4 bg-lime text-neutral-950 font-black text-xs tracking-wider uppercase border border-ink hover:bg-white transition-all duration-200 shadow-[3px_3px_0px_#ffffff] flex items-center gap-2 active:translate-x-0.5 active:translate-y-0.5"
+            className="mt-6 px-8 py-4 bg-lime text-neutral-950 font-black text-xs tracking-wider uppercase border border-neutral-950 hover:bg-white transition-all duration-200 shadow-[3px_3px_0px_#ffffff] flex items-center gap-2 active:translate-x-0.5 active:translate-y-0.5"
           >
             <span>EXPLORE DROP 001 NOW</span>
             <ArrowRight className="w-4 h-4" />

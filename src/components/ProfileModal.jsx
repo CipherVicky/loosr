@@ -114,11 +114,11 @@ export default function ProfileModal({ isOpen, onClose, user, onUpdateUser, onLo
           {/* Header Area with Avatar Monogram */}
           <div className="p-6 sm:p-8 border-b border-line bg-card">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-ink text-lime border-2 border-lime flex items-center justify-center font-black text-2xl tracking-tighter shadow-md">
+              <div className="w-16 h-16 rounded-full bg-neutral-950 text-lime border-2 border-lime flex items-center justify-center font-black text-2xl tracking-tighter shadow-md">
                 {getInitials(user.name)}
               </div>
               <div>
-                <span className="text-[10px] font-black tracking-widest text-lime bg-ink px-2 py-0.5 uppercase inline-block mb-1">
+                <span className="text-[10px] font-black tracking-widest text-lime bg-neutral-950 px-2 py-0.5 uppercase inline-block mb-1 border border-lime/40">
                   MEMBER PASS
                 </span>
                 <h2 className="text-2xl font-black text-ink uppercase tracking-tight">

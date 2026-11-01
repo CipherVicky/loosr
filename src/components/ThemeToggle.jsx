@@ -33,11 +33,12 @@ export default function ThemeToggle({ className = '' }) {
   return (
     <motion.button
       onClick={toggleTheme}
-      whileTap={{ scale: 0.92 }}
-      className={`relative inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-black tracking-wider uppercase border transition-all duration-200 ${
+      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.05 }}
+      className={`relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center border transition-all duration-200 ${
         isDark
-          ? 'bg-card border-line text-yellow-300 hover:border-lime shadow-[2px_2px_0px_#d7ff36]'
-          : 'bg-white border-line text-neutral-900 hover:border-ink hover:bg-paper shadow-[2px_2px_0px_#111111]'
+          ? 'bg-card border-line text-lime hover:border-lime shadow-[2px_2px_0px_#d7ff36]'
+          : 'bg-white border-line text-amber-500 hover:border-ink hover:bg-paper shadow-[2px_2px_0px_#111111]'
       } ${className}`}
       title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label="Toggle theme"
@@ -46,26 +47,24 @@ export default function ThemeToggle({ className = '' }) {
         {isDark ? (
           <motion.div
             key="moon"
-            initial={{ rotate: -90, scale: 0.7, opacity: 0 }}
+            initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
             animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: 90, scale: 0.7, opacity: 0 }}
+            exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-1.5"
+            className="flex items-center justify-center"
           >
-            <Moon className="w-3.5 h-3.5 text-lime fill-lime/20" />
-            <span className="hidden sm:inline text-[10px] text-paper">DARK</span>
+            <Moon className="w-4 h-4 text-lime fill-lime/25" />
           </motion.div>
         ) : (
           <motion.div
             key="sun"
-            initial={{ rotate: 90, scale: 0.7, opacity: 0 }}
+            initial={{ rotate: 90, scale: 0.6, opacity: 0 }}
             animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: -90, scale: 0.7, opacity: 0 }}
+            exit={{ rotate: -90, scale: 0.6, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-1.5"
+            className="flex items-center justify-center"
           >
-            <Sun className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
-            <span className="hidden sm:inline text-[10px] text-ink">LIGHT</span>
+            <Sun className="w-4 h-4 text-amber-500 fill-amber-500/25" />
           </motion.div>
         )}
       </AnimatePresence>

@@ -48,7 +48,7 @@ export default function ProductCard({
         {/* Quick View Lens Indicator on hover */}
         <motion.div
           animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
-          className="absolute top-3 right-3 bg-ink text-white p-1.5 rounded-full z-10 shadow-sm"
+          className="absolute top-3 right-3 bg-neutral-950 text-white p-1.5 rounded-full z-10 shadow-sm"
           title="Quick View"
         >
           <Eye className="w-3.5 h-3.5" />

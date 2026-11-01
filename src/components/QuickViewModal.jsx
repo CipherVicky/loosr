@@ -92,7 +92,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                     <button
                       onClick={() => setViewSide('front')}
                       className={`px-3 py-1 text-[10px] font-black uppercase border transition-all ${
-                        viewSide === 'front' ? 'bg-ink text-white border-ink' : 'bg-white text-ink border-line'
+                        viewSide === 'front' ? 'bg-ink text-paper border-ink' : 'bg-card text-ink border-line'
                       }`}
                     >
                       FRONT VIEW
@@ -100,7 +100,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                     <button
                       onClick={() => setViewSide('back')}
                       className={`px-3 py-1 text-[10px] font-black uppercase border transition-all ${
-                        viewSide === 'back' ? 'bg-ink text-white border-ink' : 'bg-white text-ink border-line'
+                        viewSide === 'back' ? 'bg-ink text-paper border-ink' : 'bg-card text-ink border-line'
                       }`}
                     >
                       BACK STATEMENT ART
@@ -210,8 +210,8 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                         onClick={() => setSelectedSize(size)}
                         className={`py-2 text-xs font-black uppercase border transition-all ${
                           selectedSize === size
-                            ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36]'
-                            : 'bg-white text-ink border-line hover:border-ink'
+                            ? 'bg-ink text-paper border-ink shadow-[2px_2px_0px_#d7ff36]'
+                            : 'bg-card text-ink border-line hover:border-ink'
                         }`}
                       >
                         {size}

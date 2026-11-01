@@ -169,8 +169,8 @@ export default function ScrollShowcase({ onAddToCart }) {
               onClick={() => setIsCleanCam(!isCleanCam)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-black uppercase border transition-all ${
                 isCleanCam
-                  ? 'bg-ink text-white border-ink'
-                  : 'bg-white text-ink border-line hover:border-ink'
+                  ? 'bg-ink text-paper border-ink'
+                  : 'bg-card text-ink border-line hover:border-ink'
               }`}
               title="Hide UI overlays for clean screen recordings"
             >
@@ -181,7 +181,7 @@ export default function ScrollShowcase({ onAddToCart }) {
             {/* Fullscreen 16:9 */}
             <button
               onClick={toggleFullscreen}
-              className="p-1.5 bg-white hover:bg-ink hover:text-white border border-line hover:border-ink transition-colors"
+              className="p-1.5 bg-card hover:bg-ink hover:text-paper border border-line hover:border-ink transition-colors"
               title="Toggle Fullscreen (True 16:9 monitor view)"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -192,7 +192,7 @@ export default function ScrollShowcase({ onAddToCart }) {
               <button
                 onClick={() => setViewMode('3d')}
                 className={`flex items-center gap-1 px-2.5 py-1 text-[9px] font-black uppercase transition-all ${
-                  viewMode === '3d' ? 'bg-ink text-white' : 'text-muted hover:text-ink'
+                  viewMode === '3d' ? 'bg-ink text-paper' : 'text-muted hover:text-ink'
                 }`}
               >
                 <Box className="w-3 h-3 text-lime" />
@@ -201,7 +201,7 @@ export default function ScrollShowcase({ onAddToCart }) {
               <button
                 onClick={() => setViewMode('studio')}
                 className={`flex items-center gap-1 px-2.5 py-1 text-[9px] font-black uppercase transition-all ${
-                  viewMode === 'studio' ? 'bg-ink text-white' : 'text-muted hover:text-ink'
+                  viewMode === 'studio' ? 'bg-ink text-paper' : 'text-muted hover:text-ink'
                 }`}
               >
                 <Eye className="w-3 h-3 text-lime" />
@@ -432,8 +432,8 @@ export default function ScrollShowcase({ onAddToCart }) {
                   onClick={() => setActiveSize(sz)}
                   className={`w-8 h-8 text-xs font-black uppercase border transition-all ${
                     activeSize === sz
-                      ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36]'
-                      : 'bg-white text-ink border-line hover:border-ink'
+                      ? 'bg-ink text-paper border-ink shadow-[2px_2px_0px_#d7ff36]'
+                      : 'bg-card text-ink border-line hover:border-ink'
                   }`}
                 >
                   {sz}

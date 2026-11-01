@@ -100,7 +100,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 }}
                 className={`py-2 text-xs font-black uppercase tracking-wider transition-all ${
                   mode === 'login'
-                    ? 'bg-ink text-white shadow-sm'
+                    ? 'bg-ink text-paper shadow-sm'
                     : 'text-muted hover:text-ink'
                 }`}
               >
@@ -114,7 +114,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 }}
                 className={`py-2 text-xs font-black uppercase tracking-wider transition-all ${
                   mode === 'register'
-                    ? 'bg-ink text-white shadow-sm'
+                    ? 'bg-ink text-paper shadow-sm'
                     : 'text-muted hover:text-ink'
                 }`}
               >

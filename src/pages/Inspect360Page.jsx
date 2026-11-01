@@ -105,7 +105,7 @@ export default function Inspect360Page({ onAddToCart, onOpenCart }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsAutoSpin(!isAutoSpin)}
-                    className="p-1.5 bg-ink text-white hover:bg-lime hover:text-neutral-950 transition-colors flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5"
+                    className="p-1.5 bg-neutral-950 text-white hover:bg-lime hover:text-neutral-950 transition-colors flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5"
                     title={isAutoSpin ? 'Pause auto rotation' : 'Start auto rotation'}
                   >
                     {isAutoSpin ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}

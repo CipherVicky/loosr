@@ -52,7 +52,7 @@ export default function Navbar({
   return (
     <>
       {/* Top Announcement Bar */}
-      <div className="bg-ink text-white text-center py-2 px-4 text-[11px] font-black tracking-widest uppercase border-b border-white/10 flex items-center justify-center gap-3">
+      <div className="bg-neutral-950 text-white text-center py-2 px-4 text-[11px] font-black tracking-widest uppercase border-b border-neutral-800 flex items-center justify-center gap-3">
         <span className="w-1.5 h-1.5 rounded-full bg-lime animate-ping"></span>
         <span>NEW DROP LIVE — FREE SHIPPING ON ORDERS ABOVE ₹1,499</span>
       </div>
@@ -123,7 +123,7 @@ export default function Navbar({
             {user ? (
               <button
                 onClick={onOpenProfile}
-                className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-black tracking-wider uppercase border border-ink bg-white hover:bg-ink hover:text-white transition-all duration-200 shadow-[2px_2px_0px_#111111]"
+                className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-black tracking-wider uppercase border border-ink bg-card text-ink hover:bg-ink hover:text-paper transition-all duration-200 shadow-[2px_2px_0px_#111111]"
                 title="View your profile and past orders"
               >
                 <div className="w-4 h-4 rounded-full bg-lime text-neutral-950 flex items-center justify-center text-[9px] font-black">
@@ -136,7 +136,7 @@ export default function Navbar({
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-black tracking-wider uppercase border border-line bg-white hover:border-ink hover:bg-paper transition-all duration-200 shadow-sm"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-black tracking-wider uppercase border border-line bg-card text-ink hover:border-ink hover:bg-paper transition-all duration-200 shadow-sm"
                 title="Login or register an account"
               >
                 <User className="w-3.5 h-3.5 text-muted" />
