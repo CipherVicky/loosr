@@ -11,17 +11,45 @@ import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 import ProfileModal from './components/ProfileModal';
 import AdminPage from './pages/AdminPage';
+import ShopPage from './pages/ShopPage';
+import Inspect360Page from './pages/Inspect360Page';
+import LookbookPage from './pages/LookbookPage';
+import StoryPage from './pages/StoryPage';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
+import { ArrowLeft, Home, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'shop', 'anatomy', 't-shirts', 'hoodies', 'lookbook', 'story'
   const [products, setProducts] = useState(initialProducts);
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  
+
+  // Theme Management (Light <-> Dark)
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('loosr_theme');
+    if (saved) return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('loosr_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // User Authentication & Profile States
   const [user, setUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -30,21 +58,40 @@ export default function App() {
   const [toast, setToast] = useState({ message: '', isVisible: false });
   const lenisRef = useRef(null);
 
-  // Synchronize route changes on popstate
+  // Synchronize route & hash changes
   useEffect(() => {
-    const handlePopState = () => setCurrentPath(window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    const handleRouteSync = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash.toLowerCase().replace('#', '');
+      setCurrentPath(path);
+
+      if (['admin', 'users', 'database', 'orders', 'owner'].includes(hash)) {
+        window.history.replaceState(null, '', '/admin');
+        setCurrentPath('/admin');
+        return;
+      }
+
+      if (['shop', 'anatomy', '360', 't-shirts', 'hoodies', 'lookbook', 'story'].includes(hash)) {
+        setActiveTab(hash === '360' ? 'anatomy' : hash);
+      }
+    };
+
+    handleRouteSync();
+    window.addEventListener('popstate', handleRouteSync);
+    window.addEventListener('hashchange', handleRouteSync);
+    return () => {
+      window.removeEventListener('popstate', handleRouteSync);
+      window.removeEventListener('hashchange', handleRouteSync);
+    };
   }, []);
 
-  const navigateToAdmin = () => {
-    window.history.pushState({}, '', '/admin');
-    setCurrentPath('/admin');
-  };
-
-  const navigateToHome = () => {
-    window.history.pushState({}, '', '/');
-    setCurrentPath('/');
+  const handleSelectTab = (tabId, category = null) => {
+    setActiveTab(tabId);
+    if (category) {
+      setActiveCategory(category);
+    }
+    window.location.hash = tabId === 'home' ? '' : tabId;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Helper to sync cart with database for logged-in user
@@ -93,18 +140,6 @@ export default function App() {
           localStorage.removeItem('loosr_token');
         });
     }
-
-    // Check URL hash for admin/users table shortcut (#admin, #users) and redirect to /admin
-    const handleHash = () => {
-      const hash = window.location.hash.toLowerCase();
-      if (['#admin', '#users', '#database', '#orders', '#owner'].includes(hash)) {
-        window.history.replaceState(null, '', '/admin');
-        setCurrentPath('/admin');
-      }
-    };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   // Initialize Lenis smooth scroll
@@ -148,57 +183,38 @@ export default function App() {
       let next;
       if (existingIndex > -1) {
         next = [...prev];
-        next[existingIndex] = {
-          ...next[existingIndex],
-          qty: next[existingIndex].qty + 1,
-        };
+        next[existingIndex].qty += 1;
       } else {
         next = [
           ...prev,
           {
             ...product,
+            qty: 1,
             chosenColor: product.chosenColor || product.garment,
             chosenSize: product.chosenSize || 'L',
-            qty: 1,
           },
         ];
       }
       syncCartToDb(next);
       return next;
     });
-
+    setIsCartOpen(true);
     showToast(`Added ${product.name} to bag`);
   };
 
-  const handleUpdateQty = (item, delta) => {
+  const handleUpdateQty = (index, delta) => {
     setCart((prev) => {
       const next = prev
-        .map((x) => {
-          if (
-            x.id === item.id &&
-            x.chosenColor === item.chosenColor &&
-            x.chosenSize === item.chosenSize
-          ) {
-            return { ...x, qty: x.qty + delta };
-          }
-          return x;
-        })
-        .filter((x) => x.qty > 0);
+        .map((item, i) => (i === index ? { ...item, qty: item.qty + delta } : item))
+        .filter((item) => item.qty > 0);
       syncCartToDb(next);
       return next;
     });
   };
 
-  const handleRemoveItem = (item) => {
+  const handleRemoveItem = (index) => {
     setCart((prev) => {
-      const next = prev.filter(
-        (x) =>
-          !(
-            x.id === item.id &&
-            x.chosenColor === item.chosenColor &&
-            x.chosenSize === item.chosenSize
-          )
-      );
+      const next = prev.filter((_, i) => i !== index);
       syncCartToDb(next);
       return next;
     });
@@ -246,6 +262,10 @@ export default function App() {
   };
 
   const scrollToSection = (sectionId) => {
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+      window.location.hash = '';
+    }
     setTimeout(() => {
       const el = document.getElementById(sectionId);
       if (el) {
@@ -255,7 +275,7 @@ export default function App() {
           el.scrollIntoView({ behavior: 'smooth' });
         }
       }
-    }, 100);
+    }, 150);
   };
 
   const cartTotalCount = cart.reduce((acc, item) => acc + item.qty, 0);
@@ -266,52 +286,143 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-paper text-ink selection:bg-lime selection:text-ink">
-      {/* Top Navbar */}
+    <div className="min-h-screen flex flex-col bg-paper text-ink selection:bg-lime selection:text-neutral-950 transition-colors duration-200">
+      
+      {/* Top Navbar with Theme Switcher & Animated Underline Links */}
       <Navbar
         cartCount={cartTotalCount}
         onOpenCart={() => setIsCartOpen(true)}
         user={user}
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
-        activeCategory={activeCategory}
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          scrollToSection('shop');
-        }}
-        onScrollToSection={scrollToSection}
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
-      {/* Main Content Area */}
+      {/* Breadcrumb Sub-bar when viewing a specific section tab */}
+      {activeTab !== 'home' && (
+        <div className="bg-card border-b border-line py-2.5 px-4 md:px-8 text-xs font-mono font-bold uppercase flex items-center justify-between z-30">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleSelectTab('home')}
+              className="text-muted hover:text-ink flex items-center gap-1 transition-colors"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>LOOSR</span>
+            </button>
+            <span className="text-muted">/</span>
+            <span className="text-ink">
+              {activeTab === 'anatomy' ? '360° INSPECT' : activeTab.toUpperCase()}
+            </span>
+          </div>
+
+          <button
+            onClick={() => handleSelectTab('home')}
+            className="text-[11px] font-mono text-muted hover:text-ink flex items-center gap-1 transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            <span>FULL HOME VIEW</span>
+          </button>
+        </div>
+      )}
+
+      {/* Main Content Area: Dedicated Tab Pages or Full Homepage */}
       <main className="flex-1">
-        {/* Hero with Kinetic Typography and 3D Canvas Parallax */}
-        <Hero
-          onShopClick={() => scrollToSection('shop')}
-          onLookbookClick={() => scrollToSection('lookbook')}
-        />
+        
+        {/* TAB: SHOP ALL */}
+        {activeTab === 'shop' && (
+          <ShopPage
+            products={products}
+            categoryFilter="All"
+            onSelectCategory={setActiveCategory}
+            onAddToCart={handleAddToCart}
+            onOpenQuickView={(p) => setQuickViewProduct(p)}
+            onInspect3D={() => handleSelectTab('anatomy')}
+          />
+        )}
 
-        {/* 3D Scroll-Driven Interactive Rotating T-Shirt Anatomy */}
-        <ScrollShowcase onAddToCart={handleAddToCart} />
+        {/* TAB: T-SHIRTS */}
+        {activeTab === 't-shirts' && (
+          <ShopPage
+            products={products}
+            categoryFilter="T-Shirts"
+            onSelectCategory={setActiveCategory}
+            onAddToCart={handleAddToCart}
+            onOpenQuickView={(p) => setQuickViewProduct(p)}
+            onInspect3D={() => handleSelectTab('anatomy')}
+          />
+        )}
 
-        {/* Curated Product Showcase */}
-        <ProductGrid
-          products={products}
-          activeCategory={activeCategory}
-          onSelectCategory={setActiveCategory}
-          onAddToCart={handleAddToCart}
-          onOpenQuickView={(p) => setQuickViewProduct(p)}
-        />
+        {/* TAB: HOODIES */}
+        {activeTab === 'hoodies' && (
+          <ShopPage
+            products={products}
+            categoryFilter="Hoodies"
+            onSelectCategory={setActiveCategory}
+            onAddToCart={handleAddToCart}
+            onOpenQuickView={(p) => setQuickViewProduct(p)}
+            onInspect3D={() => handleSelectTab('anatomy')}
+          />
+        )}
 
-        {/* Interactive Lookbook Gallery */}
-        <Lookbook
-          onShopCategory={(cat) => {
-            setActiveCategory(cat);
-            scrollToSection('shop');
-          }}
-        />
+        {/* TAB: 360° INSPECT LAB */}
+        {activeTab === 'anatomy' && (
+          <Inspect360Page
+            onAddToCart={handleAddToCart}
+            onOpenCart={() => setIsCartOpen(true)}
+          />
+        )}
 
-        {/* Story Banner and Footer */}
-        <Footer onShopClick={() => scrollToSection('shop')} />
+        {/* TAB: LOOKBOOK */}
+        {activeTab === 'lookbook' && (
+          <LookbookPage
+            onAddToCart={handleAddToCart}
+            onOpenQuickView={(p) => setQuickViewProduct(p)}
+            onShopCategory={(cat) => handleSelectTab(cat.toLowerCase(), cat)}
+          />
+        )}
+
+        {/* TAB: OUR STORY */}
+        {activeTab === 'story' && (
+          <StoryPage onShopClick={() => handleSelectTab('shop')} />
+        )}
+
+        {/* TAB: HOME (Unified Flagship Showcase) */}
+        {activeTab === 'home' && (
+          <>
+            <Hero
+              onShopClick={() => handleSelectTab('shop')}
+              onLookbookClick={() => handleSelectTab('lookbook')}
+            />
+
+            <ScrollShowcase onAddToCart={handleAddToCart} />
+
+            <ProductGrid
+              products={products}
+              activeCategory={activeCategory}
+              onSelectCategory={setActiveCategory}
+              onAddToCart={handleAddToCart}
+              onOpenQuickView={(p) => setQuickViewProduct(p)}
+            />
+
+            <Lookbook
+              onShopCategory={(cat) => {
+                setActiveCategory(cat);
+                handleSelectTab('shop');
+              }}
+            />
+
+            <Footer onShopClick={() => handleSelectTab('shop')} />
+          </>
+        )}
+
+        {/* Standard Footer on dedicated tabs as well */}
+        {activeTab !== 'home' && (
+          <Footer onShopClick={() => handleSelectTab('shop')} />
+        )}
+
       </main>
 
       {/* Quick View Modal */}
@@ -323,7 +434,7 @@ export default function App() {
         />
       )}
 
-      {/* Slide-out Cart Drawer with Spring Physics */}
+      {/* Slide-out Cart Drawer with Spring Physics & Direct Order Checkout */}
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}

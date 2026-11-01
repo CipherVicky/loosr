@@ -3,13 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --ink: #111111;
-  --paper: #f5f3ef;
-  --lime: #d7ff36;
-  --muted: #77766f;
-  --line: #dedbd4;
-  --card: #fffefa;
+  --ink: 17 17 17;
+  --paper: 245 243 239;
+  --card: 255 254 250;
+  --line: 222 219 212;
+  --muted: 119 118 111;
   --red: #a83b2e;
+  --lime-color: #d7ff36;
+  color-scheme: light;
+}
+
+html.dark {
+  --ink: 245 243 239;
+  --paper: 13 14 18;
+  --card: 22 24 31;
+  --line: 38 41 52;
+  --muted: 155 158 170;
+  color-scheme: dark;
+}
+
+body {
+  background-color: rgb(var(--paper));
+  color: rgb(var(--ink));
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 html.lenis, html.lenis body {
@@ -53,4 +69,70 @@ html.lenis, html.lenis body {
 
 .hard-shadow-sm {
   filter: drop-shadow(6px 8px 0 rgba(0, 0, 0, 0.1));
+}
+
+/* -------------------------------------------------------------
+   NAVBAR ITEM SLIDING UNDERLINE HOVER ANIMATION
+   Smoothly sweeps underline from left to right on hover
+-------------------------------------------------------------- */
+.nav-underline-anim {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.nav-underline-anim::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #d7ff36;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 1px;
+}
+
+.nav-underline-anim:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Dark mode overrides */
+html.dark .bg-white {
+  background-color: rgb(22 24 31 / var(--tw-bg-opacity, 1)) !important;
+}
+
+html.dark .bg-paper\/90 {
+  background-color: rgb(13 14 18 / 0.92) !important;
+}
+
+html.dark .bg-white\/70,
+html.dark .bg-white\/80 {
+  background-color: rgb(22 24 31 / 0.85) !important;
+}
+
+html.dark button[class*="shadow-"],
+html.dark div[class*="shadow-"] {
+  box-shadow: 2px 2px 0px rgba(215, 255, 54, 0.4) !important;
+}
+
+html.dark .border-ink {
+  border-color: rgb(50 54 68) !important;
+}
+
+html.dark .border-line {
+  border-color: rgb(38 41 52) !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: rgb(22 24 31) !important;
+  color: rgb(245 243 239) !important;
+  border-color: rgb(38 41 52) !important;
 }

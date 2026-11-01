@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,15 +8,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#111111",
-        paper: "#f5f3ef",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        paper: "rgb(var(--paper) / <alpha-value>)",
+        card: "rgb(var(--card) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
         lime: {
           DEFAULT: "#d7ff36",
           dark: "#b5d72e",
         },
-        muted: "#77766f",
-        line: "#dedbd4",
-        card: "#fffefa",
         brandRed: "#a83b2e",
       },
       fontFamily: {
