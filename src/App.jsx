@@ -35,36 +35,44 @@ export default function App() {
   const [toast, setToast] = useState({ message: '', isVisible: false });
   const lenisRef = useRef(null);
 
-  // Synchronize route changes on popstate
-  useEffect(() => {
-    const handlePopState = () => setCurrentPath(window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  // Helper to map pathname to tab info (clean URLs with NO '#' hash)
+  const parsePath = (pathname) => {
+    const raw = pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
+    if (['admin', 'users', 'database', 'orders', 'owner'].includes(raw)) {
+      return { path: '/admin', tab: 'admin' };
+    }
+    if (raw === 'shop') return { path: '/shop', tab: 'shop', category: 'All' };
+    if (raw === 't-shirts') return { path: '/t-shirts', tab: 't-shirts', category: 'T-Shirts' };
+    if (raw === 'hoodies') return { path: '/hoodies', tab: 'hoodies', category: 'Hoodies' };
+    if (raw === 'inspect' || raw === '360' || raw === 'anatomy' || raw === '360-inspect') {
+      return { path: '/inspect', tab: 'anatomy' };
+    }
+    if (raw === 'lookbook') return { path: '/lookbook', tab: 'lookbook' };
+    if (raw === 'story' || raw === 'our-story') return { path: '/story', tab: 'story' };
+    return { path: '/', tab: 'home' };
+  };
 
-  // Sync activeTab with URL hash
+  // Synchronize route and tab on load and popstate
   useEffect(() => {
-    const syncFromHash = () => {
-      const rawHash = window.location.hash.toLowerCase().replace('#', '');
-      if (['admin', 'users', 'database', 'orders', 'owner'].includes(rawHash)) {
-        window.history.replaceState(null, '', '/admin');
-        setCurrentPath('/admin');
-        return;
+    const syncFromLocation = () => {
+      // If any old hash exists in URL (e.g. #shop, #lookbook), immediately replace with clean path without '#'
+      if (window.location.hash) {
+        const rawHash = window.location.hash.toLowerCase().replace('#', '');
+        const targetPath = rawHash ? `/${rawHash}` : '/';
+        window.history.replaceState(null, '', targetPath);
       }
-      if (['shop', 'anatomy', '360', 't-shirts', 'hoodies', 'lookbook', 'story'].includes(rawHash)) {
-        const mappedTab = rawHash === '360' ? 'anatomy' : rawHash;
-        setActiveTab(mappedTab);
-        if (rawHash === 't-shirts') setActiveCategory('T-Shirts');
-        else if (rawHash === 'hoodies') setActiveCategory('Hoodies');
-        else if (rawHash === 'shop') setActiveCategory('All');
-      } else if (rawHash === '' || rawHash === 'home') {
-        setActiveTab('home');
+
+      const info = parsePath(window.location.pathname);
+      setCurrentPath(info.path);
+      if (info.tab !== 'admin') {
+        setActiveTab(info.tab);
+        if (info.category) setActiveCategory(info.category);
       }
     };
 
-    syncFromHash();
-    window.addEventListener('hashchange', syncFromHash);
-    return () => window.removeEventListener('hashchange', syncFromHash);
+    syncFromLocation();
+    window.addEventListener('popstate', syncFromLocation);
+    return () => window.removeEventListener('popstate', syncFromLocation);
   }, []);
 
   const handleSelectTab = (tabId, category) => {
@@ -72,11 +80,18 @@ export default function App() {
     if (category) {
       setActiveCategory(category);
     }
-    if (tabId === 'home') {
-      window.history.pushState(null, '', window.location.pathname);
-    } else {
-      window.location.hash = tabId;
-    }
+
+    let targetPath = '/';
+    if (tabId === 'shop') targetPath = '/shop';
+    else if (tabId === 't-shirts') targetPath = '/t-shirts';
+    else if (tabId === 'hoodies') targetPath = '/hoodies';
+    else if (tabId === 'anatomy') targetPath = '/inspect';
+    else if (tabId === 'lookbook') targetPath = '/lookbook';
+    else if (tabId === 'story') targetPath = '/story';
+
+    // Push clean path without any '#' symbol
+    window.history.pushState({ tab: tabId }, '', targetPath);
+    setCurrentPath(targetPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -280,7 +295,8 @@ export default function App() {
   const scrollToSection = (sectionId) => {
     if (activeTab !== 'home') {
       setActiveTab('home');
-      window.location.hash = '';
+      window.history.pushState(null, '', '/');
+      setCurrentPath('/');
     }
     setTimeout(() => {
       const el = document.getElementById(sectionId);
@@ -377,7 +393,7 @@ export default function App() {
             />
 
             {/* Story Banner and Footer */}
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -393,7 +409,7 @@ export default function App() {
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -409,7 +425,7 @@ export default function App() {
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -425,7 +441,7 @@ export default function App() {
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -436,7 +452,7 @@ export default function App() {
               onAddToCart={handleAddToCart}
               onOpenCart={() => setIsCartOpen(true)}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -448,7 +464,7 @@ export default function App() {
               onOpenCart={() => setIsCartOpen(true)}
               onOpenQuickView={(p) => setQuickViewProduct(p)}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
 
@@ -459,7 +475,7 @@ export default function App() {
               onGoToShop={() => handleSelectTab('shop', 'All')}
               onInspect3D={() => handleSelectTab('anatomy')}
             />
-            <Footer onShopClick={() => handleSelectTab('shop', 'All')} />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
       </main>

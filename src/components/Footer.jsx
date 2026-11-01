@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 
-export default function Footer({ onShopClick }) {
+export default function Footer({ onShopClick, onNavigateTab }) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -62,16 +62,16 @@ export default function Footer({ onShopClick }) {
             <div className="md:col-span-3 grid grid-cols-2 gap-4 text-xs font-black tracking-wider uppercase">
               <div className="space-y-3 flex flex-col">
                 <span className="text-muted text-[10px]">COLLECTION</span>
-                <button onClick={onShopClick} className="text-left hover:text-lime-dark transition-colors">T-Shirts</button>
-                <button onClick={onShopClick} className="text-left hover:text-lime-dark transition-colors">Hoodies</button>
-                <button onClick={onShopClick} className="text-left hover:text-lime-dark transition-colors">Denim</button>
+                <button onClick={() => onShopClick && onShopClick('T-Shirts')} className="text-left hover:text-lime-dark transition-colors">T-Shirts</button>
+                <button onClick={() => onShopClick && onShopClick('Hoodies')} className="text-left hover:text-lime-dark transition-colors">Hoodies</button>
+                <button onClick={() => onShopClick && onShopClick('Denim')} className="text-left hover:text-lime-dark transition-colors">Denim</button>
               </div>
 
               <div className="space-y-3 flex flex-col">
                 <span className="text-muted text-[10px]">COMPANY</span>
-                <a href="#story" className="hover:text-lime-dark transition-colors">Manifesto</a>
-                <a href="#shop" className="hover:text-lime-dark transition-colors">Stockists</a>
-                <a href="#shop" className="hover:text-lime-dark transition-colors">Contact</a>
+                <button onClick={() => onNavigateTab ? onNavigateTab('story') : onShopClick && onShopClick()} className="text-left hover:text-lime-dark transition-colors">Manifesto</button>
+                <button onClick={() => onNavigateTab ? onNavigateTab('shop') : onShopClick && onShopClick()} className="text-left hover:text-lime-dark transition-colors">Stockists</button>
+                <button onClick={() => onNavigateTab ? onNavigateTab('shop') : onShopClick && onShopClick()} className="text-left hover:text-lime-dark transition-colors">Contact</button>
               </div>
             </div>
 
