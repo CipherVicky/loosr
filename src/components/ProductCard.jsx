@@ -1,45 +1,84 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Minus, Eye, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Minus, Eye, Check, AlertCircle } from 'lucide-react';
 import { rupee } from '../data/products';
 
 export default function ProductCard({
   product,
   onAddToCart,
   onUpdateQty,
+  cart = [],
   cartItem,
   cartQty = 0,
   onOpenQuickView,
 }) {
   const [selectedColor, setSelectedColor] = useState(product.garment);
   const [selectedInk, setSelectedInk] = useState(product.ink);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [sizePrompt, setSizePrompt] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [addedAnim, setAddedAnim] = useState(false);
+  const [justAddedAnim, setJustAddedAnim] = useState(false);
 
-  const handleQuickAdd = (e) => {
+  // Available sizes
+  const sizes = product.sizes && product.sizes.length > 0 ? product.sizes : ['S', 'M', 'L', 'XL'];
+
+  // Check matching item in cart for the chosen size and color
+  const matchedCartItem = selectedSize
+    ? cart.find(
+        (x) =>
+          x.id === product.id &&
+          x.chosenSize === selectedSize &&
+          (!x.chosenColor || x.chosenColor === selectedColor)
+      )
+    : null;
+
+  // Active quantity for the currently chosen size
+  const activeSizeQty = matchedCartItem ? matchedCartItem.qty : 0;
+
+  // Any size of this product in cart (for indicator)
+  const totalInCartForProduct = cart
+    .filter((x) => x.id === product.id)
+    .reduce((sum, it) => sum + (it.qty || 1), 0);
+
+  const handleSelectSize = (e, size) => {
     e.stopPropagation();
-    onAddToCart({
-      ...product,
-      chosenColor: selectedColor,
-      chosenSize: product.sizes?.[0] || 'L',
-    });
-    setAddedAnim(true);
-    setTimeout(() => setAddedAnim(false), 1000);
+    setSelectedSize(size);
+    setSizePrompt(false);
+  };
+
+  const handleAddToCartClick = (e) => {
+    e.stopPropagation();
+
+    if (!selectedSize) {
+      setSizePrompt(true);
+      setTimeout(() => setSizePrompt(false), 2500);
+      return;
+    }
+
+    if (onAddToCart) {
+      onAddToCart({
+        ...product,
+        chosenColor: selectedColor,
+        chosenSize: selectedSize,
+      });
+      setJustAddedAnim(true);
+      setTimeout(() => setJustAddedAnim(false), 1200);
+    }
   };
 
   const handleIncrement = (e) => {
     e.stopPropagation();
-    if (cartItem && onUpdateQty) {
-      onUpdateQty(cartItem, 1);
+    if (matchedCartItem && onUpdateQty) {
+      onUpdateQty(matchedCartItem, 1);
     } else {
-      handleQuickAdd(e);
+      handleAddToCartClick(e);
     }
   };
 
   const handleDecrement = (e) => {
     e.stopPropagation();
-    if (cartItem && onUpdateQty) {
-      onUpdateQty(cartItem, -1);
+    if (matchedCartItem && onUpdateQty) {
+      onUpdateQty(matchedCartItem, -1);
     }
   };
 
@@ -54,7 +93,7 @@ export default function ProductCard({
       onClick={() => onOpenQuickView(product)}
       className="group relative bg-card border border-line flex flex-col justify-between cursor-pointer hover:border-ink transition-colors duration-300 shadow-sm hover:shadow-md"
     >
-      {/* Product Visual Area */}
+      {/* 1. Product Visual Area */}
       <div
         className="relative h-[250px] sm:h-[270px] flex items-center justify-center overflow-hidden transition-colors duration-500"
         style={{ backgroundColor: product.bg }}
@@ -63,6 +102,13 @@ export default function ProductCard({
         <span className="absolute top-3 left-3 bg-white border border-ink/10 text-ink text-[10px] font-black tracking-wider px-2 py-1 uppercase z-10 shadow-sm">
           {product.tag || 'NEW'}
         </span>
+
+        {/* Total In Cart Badge (if items exist in bag) */}
+        {totalInCartForProduct > 0 && (
+          <span className="absolute top-3 left-16 bg-[#d7ff36] border border-ink text-neutral-950 text-[10px] font-mono font-bold px-2 py-0.5 uppercase z-10 shadow-sm">
+            {totalInCartForProduct} IN BAG
+          </span>
+        )}
 
         {/* Quick View Lens Indicator on hover */}
         <motion.div
@@ -111,7 +157,6 @@ export default function ProductCard({
                 color: selectedInk,
               }}
             >
-              {/* Subtle highlight gradient */}
               <div className="absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-white/10 pointer-events-none" />
               <span className="font-black text-lg tracking-tight select-none -rotate-6">
                 {product.label}
@@ -119,84 +164,12 @@ export default function ProductCard({
             </div>
           )}
         </motion.div>
-
-        {/* Quick Add or Quantity Selector in Bottom Right */}
-        {cartQty > 0 ? (
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-3 right-3 z-10 flex items-center bg-ink text-white border border-ink shadow-[2px_2px_0px_#d7ff36]"
-          >
-            <button
-              type="button"
-              onClick={handleDecrement}
-              className="w-7 h-7 flex items-center justify-center hover:bg-lime hover:text-ink transition-colors font-black text-sm active:scale-90"
-              title="Decrease quantity"
-              aria-label="Decrease quantity"
-            >
-              <Minus className="w-3.5 h-3.5" />
-            </button>
-            <span className="px-2 font-mono font-black text-xs text-lime min-w-[22px] text-center select-none">
-              {cartQty}
-            </span>
-            <button
-              type="button"
-              onClick={handleIncrement}
-              className="w-7 h-7 flex items-center justify-center hover:bg-lime hover:text-ink transition-colors font-black text-sm active:scale-90"
-              title="Increase quantity"
-              aria-label="Increase quantity"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={handleQuickAdd}
-            className={`absolute bottom-3 right-3 px-3.5 py-2 text-[10px] font-black tracking-wider uppercase border border-ink transition-all duration-200 z-10 shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center gap-1.5 ${
-              addedAnim
-                ? 'bg-ink text-lime border-ink'
-                : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
-            }`}
-          >
-            {addedAnim ? (
-              <>
-                <Check className="w-3 h-3 text-lime" />
-                <span>ADDED</span>
-              </>
-            ) : (
-              <>
-                <Plus className="w-3 h-3" />
-                <span>QUICK ADD</span>
-              </>
-            )}
-          </button>
-        )}
-
-        {/* Floating Quick Size Selector on Hover */}
-        <motion.div
-          initial={false}
-          animate={{
-            y: isHovered ? 0 : 20,
-            opacity: isHovered ? 1 : 0,
-          }}
-          transition={{ duration: 0.2 }}
-          className="absolute bottom-3 left-3 flex gap-1 z-10"
-        >
-          {product.sizes?.map((size) => (
-            <span
-              key={size}
-              className="bg-white/90 backdrop-blur-sm border border-line text-[9px] font-black text-ink px-1.5 py-0.5"
-            >
-              {size}
-            </span>
-          ))}
-        </motion.div>
       </div>
 
-      {/* Product Information Card */}
-      <div className="p-4 flex flex-col justify-between flex-grow border-t border-line">
+      {/* 2. Product Meta & Size Selection Details */}
+      <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <div className="text-[11px] font-extrabold tracking-wider text-muted uppercase">
+          <div className="text-[10px] font-black tracking-widest text-muted uppercase">
             {product.cat}
           </div>
           <h3 className="font-black text-sm text-ink tracking-tight mt-0.5 group-hover:text-ink/80 transition-colors">
@@ -204,7 +177,8 @@ export default function ProductCard({
           </h3>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between">
+        {/* Price & Color Swatches */}
+        <div className="mt-3 pt-2.5 border-t border-line/60 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <strong className="font-black text-base text-ink">
               {rupee(product.price)}
@@ -221,6 +195,7 @@ export default function ProductCard({
             {product.swatches?.map((swatch, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => {
                   setSelectedColor(swatch.hex);
                   if (swatch.ink) setSelectedInk(swatch.ink);
@@ -237,32 +212,85 @@ export default function ProductCard({
           </div>
         </div>
 
-        {/* Under Product Action: Add to Cart or '- 1 +' Quantity Selector */}
+        {/* 3. SIZE SELECTION (Always asks size of user before adding) */}
         <div
           onClick={(e) => e.stopPropagation()}
           className="mt-3 pt-2.5 border-t border-line/60"
         >
-          {cartQty > 0 ? (
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-black uppercase text-muted tracking-wider">
+              SELECT SIZE:
+            </span>
+            {selectedSize ? (
+              <span className="text-[10px] font-mono font-bold text-ink">
+                CHOSEN: <strong className="text-black bg-lime px-1.5 py-0.2 border border-ink">{selectedSize}</strong>
+              </span>
+            ) : (
+              <span className={`text-[10px] font-mono transition-colors ${sizePrompt ? 'text-rose-600 font-bold animate-pulse' : 'text-neutral-400'}`}>
+                {sizePrompt ? '⚠️ PLEASE PICK A SIZE' : 'REQUIRED'}
+              </span>
+            )}
+          </div>
+
+          {/* Size Pill Buttons */}
+          <div className="grid grid-cols-4 gap-1.5">
+            {sizes.map((size) => {
+              const isSelected = selectedSize === size;
+              const hasInCart = cart.some(
+                (x) => x.id === product.id && x.chosenSize === size
+              );
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={(e) => handleSelectSize(e, size)}
+                  className={`py-1.5 text-xs font-black font-mono uppercase border transition-all cursor-pointer relative ${
+                    isSelected
+                      ? 'bg-ink text-white border-ink shadow-[2px_2px_0px_#d7ff36] scale-102'
+                      : sizePrompt
+                      ? 'border-rose-400 bg-rose-50 text-ink animate-bounce'
+                      : 'bg-card text-ink border-line hover:border-ink hover:bg-paper'
+                  }`}
+                >
+                  <span>{size}</span>
+                  {hasInCart && (
+                    <span className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-[#d7ff36] rounded-full" title="In Bag" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 4. UNDER PRODUCT ACTION: Add to Bag or '- 1 +' Quantity Stepper */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="mt-3"
+        >
+          {selectedSize && activeSizeQty > 0 ? (
+            /* Quantity Stepper when item in this chosen size is in bag */
             <div className="w-full bg-ink text-white border border-ink flex items-center justify-between px-2.5 py-1.5 shadow-[2px_2px_0px_#d7ff36]">
               <button
                 type="button"
                 onClick={handleDecrement}
-                className="w-7 h-7 flex items-center justify-center bg-neutral-900 hover:bg-lime hover:text-ink text-white transition-all font-black border border-white/20 active:scale-90"
+                className="w-7 h-7 flex items-center justify-center bg-neutral-900 hover:bg-lime hover:text-ink text-white transition-all font-black border border-white/20 active:scale-90 cursor-pointer"
                 title="Decrease quantity"
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
 
-              <div className="flex items-center gap-2 font-mono text-xs font-black select-none">
-                <span className="text-lime text-sm">{cartQty}</span>
-                <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-sans">IN BAG</span>
+              <div className="flex items-center gap-1.5 font-mono text-xs font-black select-none">
+                <span className="text-lime text-sm font-bold">{activeSizeQty}</span>
+                <span className="text-[10px] text-neutral-300 uppercase tracking-wider font-sans">
+                  IN BAG ({selectedSize})
+                </span>
               </div>
 
               <button
                 type="button"
                 onClick={handleIncrement}
-                className="w-7 h-7 flex items-center justify-center bg-lime text-ink hover:bg-white transition-all font-black border border-ink active:scale-90"
+                className="w-7 h-7 flex items-center justify-center bg-lime text-ink hover:bg-white transition-all font-black border border-ink active:scale-90 cursor-pointer"
                 title="Increase quantity"
                 aria-label="Increase quantity"
               >
@@ -270,13 +298,34 @@ export default function ProductCard({
               </button>
             </div>
           ) : (
+            /* Add to Bag Button (Prompts size if not chosen) */
             <button
               type="button"
-              onClick={handleQuickAdd}
-              className="w-full py-2 bg-paper hover:bg-lime text-ink text-[11px] font-black uppercase tracking-wider border border-ink transition-all flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5"
+              onClick={handleAddToCartClick}
+              className={`w-full py-2.5 text-[11px] font-black uppercase tracking-wider border border-ink transition-all flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer ${
+                justAddedAnim
+                  ? 'bg-ink text-[#d7ff36]'
+                  : selectedSize
+                  ? 'bg-lime hover:bg-ink hover:text-lime text-neutral-950'
+                  : 'bg-paper hover:bg-neutral-100 text-ink'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>ADD TO BAG</span>
+              {justAddedAnim ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#d7ff36]" />
+                  <span>ADDED {selectedSize} TO BAG</span>
+                </>
+              ) : selectedSize ? (
+                <>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>ADD SIZE {selectedSize} TO BAG</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-3.5 h-3.5 text-muted" />
+                  <span>CHOOSE SIZE TO ADD</span>
+                </>
+              )}
             </button>
           )}
         </div>

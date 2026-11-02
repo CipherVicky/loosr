@@ -74,6 +74,7 @@ export default function ProductGrid({
                     product={product}
                     onAddToCart={onAddToCart}
                     onUpdateQty={onUpdateQty}
+                    cart={cart}
                     cartItem={cartItem}
                     cartQty={cartQty}
                     onOpenQuickView={onOpenQuickView}

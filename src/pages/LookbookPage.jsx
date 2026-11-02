@@ -42,9 +42,8 @@ export default function LookbookPage({ onAddToCart, onOpenCart, onOpenQuickView 
 
   const handleShopLook = (look) => {
     const product = initialProducts.find((p) => p.id === look.productId) || initialProducts[0];
-    onAddToCart(product);
-    if (onOpenCart) {
-      setTimeout(() => onOpenCart(), 250);
+    if (onOpenQuickView) {
+      onOpenQuickView(product);
     }
   };
 
@@ -145,7 +144,7 @@ export default function LookbookPage({ onAddToCart, onOpenCart, onOpenQuickView 
                     className="px-6 py-3.5 bg-lime text-neutral-950 font-black text-xs tracking-wider uppercase border border-ink hover:bg-ink hover:text-lime transition-all duration-200 shadow-[3px_3px_0px_#111111] flex items-center gap-2 active:translate-x-0.5 active:translate-y-0.5"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>SHOP THIS LOOK & CHECKOUT</span>
+                    <span>SELECT SIZE & SHOP LOOK</span>
                   </button>
 
                   <button

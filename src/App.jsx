@@ -15,6 +15,7 @@ import ShopPage from './pages/ShopPage';
 import Inspect360Page from './pages/Inspect360Page';
 import LookbookPage from './pages/LookbookPage';
 import StoryPage from './pages/StoryPage';
+import CheckoutPage from './pages/CheckoutPage';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 
@@ -47,6 +48,9 @@ export default function App() {
     const raw = pathname.toLowerCase().replace(/^\/+|\/+$/g, '');
     if (['admin', 'users', 'database', 'orders', 'owner'].includes(raw)) {
       return { path: '/admin', tab: 'admin' };
+    }
+    if (raw === 'checkout' || raw === 'order' || raw === 'buy' || raw === 'pay') {
+      return { path: '/checkout', tab: 'checkout' };
     }
     if (raw === 'shop') return { path: '/shop', tab: 'shop', category: 'All' };
     if (raw === 't-shirts') return { path: '/t-shirts', tab: 't-shirts', category: 'T-Shirts' };
@@ -89,7 +93,8 @@ export default function App() {
     }
 
     let targetPath = '/';
-    if (tabId === 'shop') targetPath = '/shop';
+    if (tabId === 'checkout') targetPath = '/checkout';
+    else if (tabId === 'shop') targetPath = '/shop';
     else if (tabId === 't-shirts') targetPath = '/t-shirts';
     else if (tabId === 'hoodies') targetPath = '/hoodies';
     else if (tabId === 'anatomy') targetPath = '/inspect';
@@ -99,6 +104,14 @@ export default function App() {
     // Push clean path without any '#' symbol
     window.history.pushState({ tab: tabId }, '', targetPath);
     setCurrentPath(targetPath);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToCheckout = () => {
+    window.history.pushState({ tab: 'checkout' }, '', '/checkout');
+    setCurrentPath('/checkout');
+    setActiveTab('checkout');
+    setIsCartOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -226,6 +239,17 @@ export default function App() {
       lenis.destroy();
     };
   }, []);
+
+  // Pause smooth scroll when modals or cart drawer is open to lock background page
+  useEffect(() => {
+    if (lenisRef.current) {
+      if (isCartOpen || quickViewProduct || isAuthOpen || isProfileOpen) {
+        lenisRef.current.stop();
+      } else {
+        lenisRef.current.start();
+      }
+    }
+  }, [isCartOpen, quickViewProduct, isAuthOpen, isProfileOpen]);
 
   const showToast = (message) => {
     setToast({ message, isVisible: true });
@@ -568,6 +592,22 @@ export default function App() {
             <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
           </>
         )}
+
+        {/* Dedicated Page / Tab: CHECKOUT */}
+        {activeTab === 'checkout' && (
+          <>
+            <CheckoutPage
+              cart={cart}
+              user={user}
+              onUpdateQty={handleUpdateQty}
+              onRemoveItem={handleRemoveItem}
+              onPlaceOrder={handlePlaceOrder}
+              onOpenAuth={() => setIsAuthOpen(true)}
+              onGoBackToShop={() => handleSelectTab('shop', 'All')}
+            />
+            <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
+          </>
+        )}
       </main>
 
       {/* Quick View Modal */}
@@ -586,10 +626,9 @@ export default function App() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cart={cart}
-        user={user}
         onUpdateQty={handleUpdateQty}
         onRemoveItem={handleRemoveItem}
-        onPlaceOrder={handlePlaceOrder}
+        onProceedToCheckout={navigateToCheckout}
       />
 
       {/* Login & Register Authentication Modal */}

@@ -176,6 +176,7 @@ export default function ShopPage({
                   product={product}
                   onAddToCart={onAddToCart}
                   onUpdateQty={onUpdateQty}
+                  cart={cart}
                   cartItem={cartItem}
                   cartQty={cartQty}
                   onOpenQuickView={onOpenQuickView}
