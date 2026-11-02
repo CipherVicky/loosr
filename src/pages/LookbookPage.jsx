@@ -52,8 +52,8 @@ export default function LookbookPage({ onAddToCart, onOpenCart, onOpenQuickView 
       {/* Editorial Header Banner */}
       <section className="border-b border-line bg-paper/60 backdrop-blur-sm pt-8 pb-10 px-4 md:px-8">
         <div className="max-w-[1240px] mx-auto">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-lime/20 border border-lime text-neutral-950 text-[10px] font-black tracking-widest uppercase mb-4">
-            <Camera className="w-3 h-3 text-lime-dark" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-900 border border-lime text-white text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm">
+            <Camera className="w-3.5 h-3.5 text-[#d7ff36]" />
             VISUAL EDITORIAL ARCHIVE
           </span>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">

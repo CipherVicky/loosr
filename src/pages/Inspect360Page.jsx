@@ -58,8 +58,8 @@ export default function Inspect360Page({ onAddToCart, onUpdateQty, cart = [], on
       <section className="border-b border-line bg-paper/60 backdrop-blur-sm pt-8 pb-6 px-4 md:px-8">
         <div className="max-w-[1240px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-lime/20 border border-lime text-neutral-950 text-[10px] font-black tracking-widest uppercase mb-3">
-              <Box className="w-3.5 h-3.5 text-lime-dark" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-900 border border-lime text-white text-[10px] font-black tracking-widest uppercase mb-3 shadow-sm">
+              <Box className="w-3.5 h-3.5 text-[#d7ff36]" />
               INTERACTIVE 3D CAD VIEWER
             </div>
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-none">

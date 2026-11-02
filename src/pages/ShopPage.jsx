@@ -57,8 +57,8 @@ export default function ShopPage({
         <div className="max-w-[1240px] mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-lime/20 border border-lime text-neutral-950 text-[10px] font-black tracking-widest uppercase mb-4">
-                <Sparkles className="w-3 h-3 text-lime-dark" />
+              <span className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-900 border border-lime text-white text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-[#d7ff36]" />
                 DEDICATED CATALOGUE
               </span>
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">

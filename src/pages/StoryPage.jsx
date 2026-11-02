@@ -8,8 +8,8 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
       {/* Manifesto Banner */}
       <section className="border-b border-line bg-paper/60 backdrop-blur-sm pt-8 pb-12 px-4 md:px-8">
         <div className="max-w-[1240px] mx-auto">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-lime/20 border border-lime text-neutral-950 text-[10px] font-black tracking-widest uppercase mb-4">
-            <Sparkles className="w-3 h-3 text-lime-dark" />
+          <span className="inline-flex items-center gap-2 px-3 py-1 bg-neutral-900 border border-lime text-white text-[10px] font-black tracking-widest uppercase mb-4 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#d7ff36]" />
             BRAND PHILOSOPHY & CRAFT
           </span>
           <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase leading-[0.95]">
@@ -75,7 +75,7 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
         <div className="bg-card border border-ink p-8 md:p-12 shadow-[8px_8px_0px_#111111]">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7">
-              <span className="text-[10px] font-black uppercase tracking-widest text-lime-dark bg-lime/10 px-2.5 py-1 border border-lime/30">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white bg-neutral-900 px-2.5 py-1 border border-lime shadow-sm">
                 GARMENT ENGINEERING
               </span>
               <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mt-3">
@@ -114,7 +114,7 @@ export default function StoryPage({ onGoToShop, onInspect3D }) {
             <div className="lg:col-span-5 bg-paper border border-ink p-6 flex flex-col gap-4">
               <div className="text-xs font-black uppercase tracking-wider border-b border-line pb-2 flex items-center justify-between">
                 <span>FABRIC SPEC SHEET</span>
-                <span className="text-lime-dark font-mono">SPEC: 2026-LSR</span>
+                <span className="text-[#d7ff36] font-mono font-bold">SPEC: 2026-LSR</span>
               </div>
               <div className="flex justify-between text-xs py-1 border-b border-line/60">
                 <span className="text-muted">Fiber Origin:</span>
