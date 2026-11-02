@@ -43,6 +43,21 @@ function formatQuery(sql, isPg) {
 async function initSchema() {
   if (isPostgres) {
     try {
+      // Safe migration for carts table if cart_id column is missing
+      try {
+        const check = await pool.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'carts' AND column_name = 'cart_id'
+        `);
+        if (check.rows.length === 0) {
+          await pool.query('DROP TABLE IF EXISTS carts CASCADE;');
+          console.log('[+] Migrating carts table to universal cart_id schema...');
+        }
+      } catch (checkErr) {
+        console.error('Carts migration check notice:', checkErr);
+      }
+
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -70,10 +85,15 @@ async function initSchema() {
         );
 
         CREATE TABLE IF NOT EXISTS carts (
-          user_id INTEGER PRIMARY KEY,
+          cart_id TEXT PRIMARY KEY,
+          user_id INTEGER,
+          session_id TEXT,
           items_json TEXT NOT NULL DEFAULT '[]',
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE INDEX IF NOT EXISTS idx_carts_user_id ON carts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_carts_session_id ON carts(session_id);
       `);
       console.log('[✓] PostgreSQL production schema confirmed.');
     } catch (err) {
@@ -81,6 +101,16 @@ async function initSchema() {
     }
   } else {
     try {
+      // Check SQLite carts table schema
+      try {
+        const pragma = sqliteDb.pragma('table_info(carts)');
+        const hasCartId = pragma.some((c) => c.name === 'cart_id');
+        if (!hasCartId && pragma.length > 0) {
+          sqliteDb.exec('DROP TABLE IF EXISTS carts;');
+          console.log('[+] Migrating SQLite carts table to universal cart_id schema...');
+        }
+      } catch (checkErr) {}
+
       sqliteDb.exec(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,10 +139,11 @@ async function initSchema() {
         );
 
         CREATE TABLE IF NOT EXISTS carts (
-          user_id INTEGER PRIMARY KEY,
+          cart_id TEXT PRIMARY KEY,
+          user_id INTEGER,
+          session_id TEXT,
           items_json TEXT NOT NULL DEFAULT '[]',
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY(user_id) REFERENCES users(id)
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
       `);
       console.log('[✓] SQLite local schema confirmed.');

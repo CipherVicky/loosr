@@ -113,46 +113,74 @@ export default function App() {
     setActiveTab('home');
   };
 
-  // Helper to sync cart with database for logged-in user
-  const syncCartToDb = (newCart) => {
-    const token = localStorage.getItem('loosr_token');
-    if (token) {
-      fetch('/api/cart', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ cart: newCart }),
-      }).catch((err) => console.error('Cart sync error:', err));
+  // Unique session token for persistent guest visitor shopping carts in DB
+  const getCartToken = () => {
+    try {
+      let token = localStorage.getItem('loosr_cart_token');
+      if (!token) {
+        token = 'guest_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+        localStorage.setItem('loosr_cart_token', token);
+      }
+      return token;
+    } catch (e) {
+      return 'guest_visitor';
     }
   };
 
-  const fetchUserCart = (token) => {
+  // Helper to persist shopping cart to real database (PostgreSQL on Render) for both guests & logged-in users
+  const syncCartToDb = (newCart) => {
+    const token = localStorage.getItem('loosr_token');
+    const cartToken = getCartToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-cart-token': cartToken,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     fetch('/api/cart', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ cart: newCart, cartToken }),
+    }).catch((err) => console.error('Cart sync error:', err));
+  };
+
+  // Helper to retrieve live cart from real DB on refresh or app load
+  const fetchCartFromDb = (authToken) => {
+    const token = authToken || localStorage.getItem('loosr_token');
+    const cartToken = getCartToken();
+    const headers = {
+      'x-cart-token': cartToken,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch(`/api/cart?cart_token=${encodeURIComponent(cartToken)}`, { headers })
       .then((res) => (res.ok ? res.json() : Promise.reject('Failed to fetch cart')))
       .then((data) => {
-        if (data && Array.isArray(data.cart) && data.cart.length > 0) {
-          setCart(data.cart);
-          try {
-            localStorage.setItem('loosr_cart', JSON.stringify(data.cart));
-          } catch (e) {}
-        } else {
-          // If server cart is empty but localStorage has items, sync to server
-          try {
-            const local = JSON.parse(localStorage.getItem('loosr_cart') || '[]');
-            if (local.length > 0) {
-              syncCartToDb(local);
-            }
-          } catch (e) {}
+        if (data && Array.isArray(data.cart)) {
+          if (data.cart.length > 0) {
+            setCart(data.cart);
+            try {
+              localStorage.setItem('loosr_cart', JSON.stringify(data.cart));
+            } catch (e) {}
+          } else {
+            // If database cart is empty, check if we have local items to sync to database
+            try {
+              const local = JSON.parse(localStorage.getItem('loosr_cart') || '[]');
+              if (local.length > 0) {
+                syncCartToDb(local);
+              }
+            } catch (e) {}
+          }
         }
       })
       .catch((err) => console.error('Load cart error:', err));
   };
 
-  // Initialize user session on mount
+  // Initialize user session and sync cart from real DB on initial mount
   useEffect(() => {
     const token = localStorage.getItem('loosr_token');
     if (token) {
@@ -163,12 +191,17 @@ export default function App() {
         .then((data) => {
           if (data && data.user) {
             setUser(data.user);
-            fetchUserCart(token);
+            fetchCartFromDb(token);
+          } else {
+            fetchCartFromDb(null);
           }
         })
         .catch(() => {
           localStorage.removeItem('loosr_token');
+          fetchCartFromDb(null);
         });
+    } else {
+      fetchCartFromDb(null);
     }
   }, []);
 
@@ -285,11 +318,20 @@ export default function App() {
 
   const handlePlaceOrder = async (orderDetails) => {
     try {
+      const cartToken = getCartToken();
+      const token = localStorage.getItem('loosr_token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-cart-token': cartToken,
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           userId: user?.id || null,
+          cartToken,
           customerName: orderDetails.name,
           customerEmail: user?.email || orderDetails.email || '',
           customerPhone: orderDetails.phone,
@@ -557,7 +599,7 @@ export default function App() {
         onAuthSuccess={(loggedInUser) => {
           setUser(loggedInUser);
           const token = localStorage.getItem('loosr_token');
-          if (token) fetchUserCart(token);
+          if (token) fetchCartFromDb(token);
           showToast(`Welcome, ${loggedInUser.name}!`);
         }}
       />

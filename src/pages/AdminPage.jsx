@@ -159,6 +159,21 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteCart = async (cartId) => {
+    if (!window.confirm(`Are you sure you want to remove active cart "${cartId}" from database?`)) return;
+    try {
+      const res = await fetch(`/api/admin/carts/${encodeURIComponent(cartId)}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-key': passcode },
+      });
+      if (res.ok) {
+        setCarts((prev) => prev.filter((c) => c.cart_id !== cartId));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // CSV Exporters
   const exportUsersCSV = () => {
     if (users.length === 0) return;
@@ -199,13 +214,16 @@ export default function AdminPage() {
 
   const exportCartsCSV = () => {
     if (carts.length === 0) return;
-    const headers = ['User_ID', 'Customer_Name', 'Email', 'Phone', 'Items_Count', 'Raw_Items_JSON', 'Updated_At'];
+    const headers = ['Cart_ID', 'User_ID', 'Customer_Type', 'Customer_Name', 'Email', 'Phone', 'Items_Count', 'Total_Value_INR', 'Raw_Items_JSON', 'Updated_At'];
     const rows = carts.map((c) => [
-      c.user_id,
-      `"${(c.customer_name || '').replace(/"/g, '""')}"`,
+      `"${c.cart_id || ''}"`,
+      c.user_id || 'GUEST',
+      c.user_id ? 'Registered User' : 'Guest Visitor',
+      `"${(c.customer_name || 'Guest Visitor').replace(/"/g, '""')}"`,
       `"${c.customer_email || ''}"`,
       `"${c.customer_phone || ''}"`,
-      (c.items || []).length,
+      c.items_count || (c.items || []).length,
+      c.total_value || 0,
       `"${(c.raw_items_json || '').replace(/"/g, '""')}"`,
       `"${c.updated_at || ''}"`,
     ]);
@@ -254,10 +272,12 @@ export default function AdminPage() {
 
   const filteredCarts = carts.filter(
     (c) =>
+      c.cart_id?.toLowerCase().includes(q) ||
       c.customer_name?.toLowerCase().includes(q) ||
       c.customer_email?.toLowerCase().includes(q) ||
       c.customer_phone?.toLowerCase().includes(q) ||
-      String(c.user_id).includes(q)
+      (c.user_id && String(c.user_id).includes(q)) ||
+      (c.items && c.items.some((it) => it.name?.toLowerCase().includes(q)))
   );
 
   // Status color pill helper
@@ -884,7 +904,7 @@ export default function AdminPage() {
                   </span>
                 </h2>
                 <p className="text-xs font-mono text-neutral-400 mt-0.5">
-                  Live persistent shopping carts synced across customer logins · {carts.length} active sessions
+                  Live persistent shopping carts in PostgreSQL real database · {carts.length} active sessions
                 </p>
               </div>
 
@@ -898,44 +918,89 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-[#121214] border border-[#27272a] overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono border-collapse min-w-[900px]">
+              <table className="w-full text-left text-xs font-mono border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-[#18181b] border-b border-[#27272a] text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                    <th className="py-3 px-3">user_id</th>
-                    <th className="py-3 px-3">customer_name</th>
-                    <th className="py-3 px-3">customer_email</th>
-                    <th className="py-3 px-3">customer_phone</th>
+                    <th className="py-3 px-3">cart_id</th>
+                    <th className="py-3 px-3">customer_identity</th>
+                    <th className="py-3 px-3">contact_details</th>
                     <th className="py-3 px-3">items_count</th>
-                    <th className="py-3 px-3">items_json (BAG CONTENT)</th>
+                    <th className="py-3 px-3">bag_items (garments & sizes)</th>
+                    <th className="py-3 px-3">cart_total</th>
                     <th className="py-3 px-3">updated_at</th>
+                    <th className="py-3 px-3 text-right">action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#27272a]">
                   {filteredCarts.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-neutral-500">
+                      <td colSpan={8} className="py-12 text-center text-neutral-500">
                         No active carts recorded in database.
                       </td>
                     </tr>
                   ) : (
                     filteredCarts.map((c) => (
-                      <tr key={c.user_id} className="hover:bg-[#18181b]/70 transition-colors">
-                        <td className="py-3 px-3 text-[#d7ff36] font-bold">User #{c.user_id}</td>
-                        <td className="py-3 px-3 font-sans font-bold text-white">{c.customer_name || 'Anonymous'}</td>
-                        <td className="py-3 px-3 text-neutral-300">{c.customer_email || '—'}</td>
-                        <td className="py-3 px-3 text-neutral-400">{c.customer_phone || '—'}</td>
-                        <td className="py-3 px-3 font-bold text-white">{(c.items || []).length} items</td>
-                        <td className="py-3 px-3 max-w-[300px]">
+                      <tr key={c.cart_id || c.user_id} className="hover:bg-[#18181b]/70 transition-colors">
+                        <td className="py-3 px-3 text-neutral-400 font-mono text-[11px]">
+                          <span className="bg-[#1c1c20] px-2 py-0.5 border border-[#333] text-neutral-200">
+                            {c.cart_id || (c.user_id ? `user_${c.user_id}` : 'guest')}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-sans">
+                          {c.user_id ? (
+                            <div>
+                              <div className="font-bold text-white flex items-center gap-1.5">
+                                <span>{c.customer_name || `User #${c.user_id}`}</span>
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-[#d7ff36]/20 text-[#d7ff36] border border-[#d7ff36]/40 uppercase">
+                                  User #{c.user_id}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-neutral-300">Guest Visitor</span>
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 bg-neutral-800 text-neutral-400 border border-neutral-700 uppercase">
+                                Guest
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-neutral-400 text-[11px]">
+                          {c.customer_email || c.customer_phone ? (
+                            <div>
+                              <div>{c.customer_email || '—'}</div>
+                              <div className="text-neutral-500">{c.customer_phone || ''}</div>
+                            </div>
+                          ) : (
+                            <span className="text-neutral-600">Anonymous Session</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-white">
+                          {c.items_count || (c.items || []).reduce((sum, it) => sum + (it.qty || 1), 0)} items
+                        </td>
+                        <td className="py-3 px-3 max-w-[320px]">
                           <div className="space-y-1">
                             {(c.items || []).map((it, idx) => (
                               <div key={idx} className="text-[11px] text-neutral-300 truncate">
-                                • {it.name} ({it.chosenSize || 'L'}) ×{it.qty}
+                                • {it.name} <span className="text-neutral-500">({it.chosenSize || 'L'}, {it.chosenColor || 'Ink'})</span> ×{it.qty || 1}
                               </div>
                             ))}
                           </div>
                         </td>
+                        <td className="py-3 px-3 font-bold text-[#d7ff36] whitespace-nowrap">
+                          {rupee(c.total_value || (c.items || []).reduce((sum, it) => sum + (it.price || 0) * (it.qty || 1), 0))}
+                        </td>
                         <td className="py-3 px-3 text-neutral-400 text-[11px] whitespace-nowrap">
                           {c.updated_at ? new Date(c.updated_at).toLocaleString() : 'Recent'}
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <button
+                            onClick={() => handleDeleteCart(c.cart_id)}
+                            className="p-1.5 text-neutral-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                            title="Delete / Clear Cart"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -952,7 +1017,7 @@ export default function AdminPage() {
             <div className="bg-[#121214] border border-[#27272a] p-5">
               <h2 className="text-lg font-black tracking-tight text-white uppercase flex items-center gap-2 mb-1">
                 <Code className="w-5 h-5 text-[#d7ff36]" />
-                <span>DATABASE SCHEMA SPECIFICATION (SQLite 3.4 WAL)</span>
+                <span>DATABASE SCHEMA SPECIFICATION (PostgreSQL & SQLite)</span>
               </h2>
               <p className="text-xs font-mono text-neutral-400">
                 Official relational schema defining the 3 production tables: `users`, `orders`, and `carts`.
@@ -963,13 +1028,13 @@ export default function AdminPage() {
                   <div className="text-[#d7ff36] font-bold mb-2">-- TABLE 1: users (Customer Accounts)</div>
                   <pre className="text-neutral-400 text-[11px] leading-relaxed">
 {`CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,           -- bcrypt hashed (60 chars)
   phone TEXT DEFAULT '',
   address TEXT DEFAULT '',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`}
                   </pre>
                 </div>
@@ -978,7 +1043,7 @@ export default function AdminPage() {
                   <div className="text-[#d7ff36] font-bold mb-2">-- TABLE 2: orders (Customer Purchases)</div>
                   <pre className="text-neutral-400 text-[11px] leading-relaxed">
 {`CREATE TABLE IF NOT EXISTS orders (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   user_id INTEGER,                   -- references users(id)
   order_number TEXT NOT NULL,        -- LS-XXXXXX
   customer_name TEXT,
@@ -989,20 +1054,20 @@ export default function AdminPage() {
   payment_method TEXT DEFAULT 'cod',
   items_json TEXT NOT NULL,          -- JSON array of purchased garments
   status TEXT DEFAULT 'CONFIRMED',   -- CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`}
                   </pre>
                 </div>
 
                 <div className="p-4 bg-[#09090b] border border-[#27272a] font-mono text-xs text-neutral-300">
-                  <div className="text-[#d7ff36] font-bold mb-2">-- TABLE 3: carts (Persistent User Bags)</div>
+                  <div className="text-[#d7ff36] font-bold mb-2">-- TABLE 3: carts (Universal Persistent Carts)</div>
                   <pre className="text-neutral-400 text-[11px] leading-relaxed">
 {`CREATE TABLE IF NOT EXISTS carts (
-  user_id INTEGER PRIMARY KEY,       -- references users(id)
-  items_json TEXT NOT NULL DEFAULT '[]',
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id)
+  cart_id TEXT PRIMARY KEY,          -- 'user_<id>' or 'guest_<token>'
+  user_id INTEGER,                   -- references users(id) if logged in
+  session_id TEXT,                   -- browser guest session token
+  items_json TEXT NOT NULL DEFAULT '[]', -- JSON array of garments in bag
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`}
                   </pre>
                 </div>

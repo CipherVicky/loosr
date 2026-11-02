@@ -41,6 +41,29 @@ const isAdminAuthorized = (req) => {
   return key === MASTER_KEY || key === 'admin' || key === 'loosr' || key === 'vicky' || key === 'loosr2026';
 };
 
+// Helper to resolve cart identifier (supports both logged-in users and guest sessions in real DB)
+const resolveCartIdentity = (req) => {
+  let userId = null;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.id;
+    } catch (e) {}
+  }
+
+  const sessionToken = (
+    req.headers['x-cart-token'] ||
+    req.query.cart_token ||
+    req.body?.cartToken ||
+    ''
+  ).trim();
+
+  const cartId = userId ? `user_${userId}` : (sessionToken ? `guest_${sessionToken}` : null);
+  return { userId, sessionToken, cartId };
+};
+
 // 1. REGISTER
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -228,6 +251,23 @@ app.post('/api/orders', async (req, res) => {
       JSON.stringify(items || []),
     ]);
 
+    // Clear active cart in DB after successful order
+    try {
+      const { userId: cartUserId, sessionToken, cartId } = resolveCartIdentity(req);
+      const targetUserId = userId || cartUserId;
+      if (targetUserId) {
+        await db.run('DELETE FROM carts WHERE user_id = ? OR cart_id = ?', [targetUserId, `user_${targetUserId}`]);
+      }
+      if (sessionToken) {
+        await db.run('DELETE FROM carts WHERE session_id = ? OR cart_id = ?', [sessionToken, `guest_${sessionToken}`]);
+      }
+      if (cartId) {
+        await db.run('DELETE FROM carts WHERE cart_id = ?', [cartId]);
+      }
+    } catch (clearErr) {
+      console.warn('Could not clear cart after order:', clearErr);
+    }
+
     res.status(201).json({
       id: result.lastInsertRowid,
       orderNumber: orderNo,
@@ -239,33 +279,123 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// 5.5 USER CART PERSISTENCE (GET & SYNC CART IN DATABASE)
-app.get('/api/cart', authenticateToken, async (req, res) => {
+// 5.5 UNIVERSAL CART PERSISTENCE IN REAL DB (SUPPORTS GUEST VISITORS & LOGGED-IN USERS)
+app.get('/api/cart', async (req, res) => {
   try {
-    const row = await db.get('SELECT items_json FROM carts WHERE user_id = ?', [req.user.id]);
-    const cart = row ? JSON.parse(row.items_json || '[]') : [];
-    res.json({ cart });
+    const { userId, sessionToken, cartId } = resolveCartIdentity(req);
+
+    if (!cartId && !sessionToken && !userId) {
+      return res.json({ cart: [], cartId: null });
+    }
+
+    let cartRow = null;
+
+    if (userId) {
+      // Find logged-in user cart
+      cartRow = await db.get('SELECT * FROM carts WHERE user_id = ? OR cart_id = ?', [userId, `user_${userId}`]);
+
+      // If user also had items in an active guest cart, seamlessly merge them
+      if (sessionToken) {
+        const guestRow = await db.get(
+          'SELECT * FROM carts WHERE cart_id = ? OR (session_id = ? AND user_id IS NULL)',
+          [`guest_${sessionToken}`, sessionToken]
+        );
+        if (guestRow && guestRow.items_json && guestRow.items_json !== '[]') {
+          let userItems = [];
+          let guestItems = [];
+          try {
+            userItems = JSON.parse(cartRow?.items_json || '[]');
+            guestItems = JSON.parse(guestRow.items_json || '[]');
+          } catch (e) {}
+
+          if (guestItems.length > 0) {
+            const mergedMap = new Map();
+            for (const item of [...userItems, ...guestItems]) {
+              const key = `${item.id}_${item.chosenColor || ''}_${item.chosenSize || ''}`;
+              if (mergedMap.has(key)) {
+                mergedMap.get(key).qty = (mergedMap.get(key).qty || 1) + (item.qty || 1);
+              } else {
+                mergedMap.set(key, { ...item });
+              }
+            }
+            const mergedList = Array.from(mergedMap.values());
+            const mergedJson = JSON.stringify(mergedList);
+
+            await db.run(
+              `INSERT INTO carts (cart_id, user_id, session_id, items_json, updated_at)
+               VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+               ON CONFLICT(cart_id) DO UPDATE SET
+                 items_json = excluded.items_json,
+                 user_id = COALESCE(excluded.user_id, carts.user_id),
+                 session_id = COALESCE(excluded.session_id, carts.session_id),
+                 updated_at = CURRENT_TIMESTAMP`,
+              [`user_${userId}`, userId, sessionToken, mergedJson]
+            );
+
+            // Clean up old guest cart
+            await db.run('DELETE FROM carts WHERE cart_id = ?', [guestRow.cart_id]);
+            return res.json({ cart: mergedList, cartId: `user_${userId}` });
+          }
+        }
+      }
+    } else {
+      // Guest visitor cart
+      cartRow = await db.get(
+        'SELECT * FROM carts WHERE cart_id = ? OR session_id = ?',
+        [cartId, sessionToken]
+      );
+    }
+
+    let cart = [];
+    if (cartRow && cartRow.items_json) {
+      try {
+        cart = JSON.parse(cartRow.items_json);
+      } catch (e) {
+        cart = [];
+      }
+    }
+
+    res.json({ cart, cartId: cartId || cartRow?.cart_id || null });
   } catch (error) {
     console.error('Fetch cart error:', error);
     res.status(500).json({ error: 'Failed to fetch cart' });
   }
 });
 
-app.put('/api/cart', authenticateToken, async (req, res) => {
+app.put('/api/cart', async (req, res) => {
   try {
     const { cart } = req.body;
+    let { userId, sessionToken, cartId } = resolveCartIdentity(req);
+
+    if (!cartId && req.body?.cartToken) {
+      sessionToken = req.body.cartToken.trim();
+      cartId = userId ? `user_${userId}` : `guest_${sessionToken}`;
+    }
+
+    if (!cartId) {
+      return res.status(400).json({ error: 'Cart identifier required' });
+    }
+
     const itemsJson = JSON.stringify(cart || []);
 
     const upsertSql = `
-      INSERT INTO carts (user_id, items_json, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(user_id) DO UPDATE SET
+      INSERT INTO carts (cart_id, user_id, session_id, items_json, updated_at)
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(cart_id) DO UPDATE SET
         items_json = excluded.items_json,
+        user_id = COALESCE(excluded.user_id, carts.user_id),
+        session_id = COALESCE(excluded.session_id, carts.session_id),
         updated_at = CURRENT_TIMESTAMP
     `;
 
-    await db.run(upsertSql, [req.user.id, itemsJson]);
-    res.json({ success: true, count: (cart || []).length });
+    await db.run(upsertSql, [
+      cartId,
+      userId || null,
+      sessionToken || null,
+      itemsJson,
+    ]);
+
+    res.json({ success: true, count: (cart || []).length, cartId });
   } catch (error) {
     console.error('Save cart error:', error);
     res.status(500).json({ error: 'Failed to save cart to database' });
@@ -328,7 +458,9 @@ app.get('/api/admin/carts', async (req, res) => {
   try {
     const carts = await db.all(`
       SELECT 
+        c.cart_id,
         c.user_id,
+        c.session_id,
         u.name as customer_name,
         u.email as customer_email,
         u.phone as customer_phone,
@@ -336,18 +468,52 @@ app.get('/api/admin/carts', async (req, res) => {
         c.updated_at
       FROM carts c
       LEFT JOIN users u ON u.id = c.user_id
+      WHERE c.items_json IS NOT NULL 
+        AND c.items_json != '[]' 
+        AND c.items_json != ''
       ORDER BY c.updated_at DESC
     `);
 
-    const parsed = carts.map((c) => ({
-      ...c,
-      items: JSON.parse(c.items_json || '[]'),
-      raw_items_json: c.items_json,
-    }));
+    const parsed = carts
+      .map((c) => {
+        let items = [];
+        try {
+          items = JSON.parse(c.items_json || '[]');
+        } catch (e) {
+          items = [];
+        }
+        const total_value = items.reduce(
+          (sum, it) => sum + (Number(it.price) || 0) * (Number(it.qty) || 1),
+          0
+        );
+        return {
+          ...c,
+          items,
+          total_value,
+          items_count: items.reduce((sum, it) => sum + (Number(it.qty) || 1), 0),
+          raw_items_json: c.items_json,
+        };
+      })
+      .filter((c) => c.items.length > 0);
+
     res.json({ carts: parsed });
   } catch (err) {
     console.error('Fetch carts table error:', err);
     res.status(500).json({ error: 'Failed to query carts database' });
+  }
+});
+
+app.delete('/api/admin/carts/:cartId', async (req, res) => {
+  if (!isAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid username or passcode' });
+  }
+
+  try {
+    await db.run('DELETE FROM carts WHERE cart_id = ?', [req.params.cartId]);
+    res.json({ success: true, message: `Cart ${req.params.cartId} deleted` });
+  } catch (err) {
+    console.error('Delete cart error:', err);
+    res.status(500).json({ error: 'Failed to delete cart' });
   }
 });
 
