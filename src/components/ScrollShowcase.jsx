@@ -110,13 +110,13 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
     <section
       id="anatomy"
       ref={containerRef}
-      className="relative h-[420vh] bg-[#f5f3ef] border-b border-line"
+      className="relative h-[420vh] bg-paper text-ink border-b border-line transition-colors duration-300"
     >
       {/* Pinned Sticky 3D Showcase Stage */}
       <div
         ref={stageRef}
         className={`sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden px-4 md:px-8 py-5 select-none transition-all duration-300 ${
-          isFullscreen ? 'bg-[#f5f3ef] p-0' : ''
+          isFullscreen ? 'bg-paper p-0' : ''
         }`}
       >
         {/* Top Header & Telemetry Controls */}
@@ -144,7 +144,7 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase border transition-all ${
                 is169Cinema
                   ? 'bg-ink text-lime border-ink shadow-[2px_2px_0px_#d7ff36]'
-                  : 'bg-white text-ink border-line hover:border-ink'
+                  : 'bg-card text-ink border-line hover:border-ink'
               }`}
               title="Lock center viewport into widescreen 16:9 proportion"
             >
@@ -158,7 +158,7 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase border transition-all ${
                 isAutoSpin
                   ? 'bg-lime text-neutral-950 border-ink shadow-[2px_2px_0px_#111111]'
-                  : 'bg-white text-ink border-line hover:border-ink'
+                  : 'bg-card text-ink border-line hover:border-ink'
               }`}
               title="Auto-rotate 360° continuously for video recording"
             >
@@ -229,21 +229,21 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               {/* ANNOTATION 1: TEXTILE ARCHITECTURE */}
               <motion.div
                 style={{ opacity: feat1Opacity, y: feat1Y }}
-                className="absolute left-2 sm:left-6 md:left-10 lg:left-16 top-1/4 max-w-[260px] sm:max-w-[290px] z-20 pointer-events-none"
+                className="absolute left-2 sm:left-6 md:left-10 lg:left-16 top-1/4 w-[290px] sm:w-[325px] max-w-[92vw] z-20 pointer-events-none"
               >
                 <div className="bg-card border border-ink p-4 sm:p-5 shadow-[4px_4px_0px_#111111]">
-                  <span className="text-[9px] font-black tracking-widest text-lime bg-ink px-2 py-0.5 uppercase inline-block mb-2">
+                  <span className="text-[9px] font-black tracking-widest text-neutral-950 bg-lime px-2.5 py-0.5 uppercase inline-block mb-2 font-mono shadow-sm">
                     01 / TEXTILE SPEC
                   </span>
-                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight">
+                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight break-normal">
                     280 GSM MOCHA FRENCH COTTON
                   </h3>
-                  <p className="text-xs text-[#555] mt-1.5 leading-relaxed font-medium">
+                  <p className="text-xs text-muted mt-1.5 leading-relaxed font-medium">
                     Pure ring-spun combed dense weave. Finished in mineral espresso dye that builds a vintage patina while keeping its structural box drape.
                   </p>
                   <div className="flex gap-1.5 mt-3">
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">PRE-SHRUNK</span>
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">280 GSM</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">PRE-SHRUNK</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">280 GSM</span>
                   </div>
                 </div>
               </motion.div>
@@ -251,21 +251,21 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               {/* ANNOTATION 2: FRONT CHEST PUFF */}
               <motion.div
                 style={{ opacity: feat2Opacity, y: feat2Y }}
-                className="absolute right-2 sm:right-6 md:right-10 lg:right-16 top-1/4 max-w-[260px] sm:max-w-[290px] z-20 pointer-events-none"
+                className="absolute right-2 sm:right-6 md:right-10 lg:right-16 top-1/4 w-[290px] sm:w-[325px] max-w-[92vw] z-20 pointer-events-none"
               >
                 <div className="bg-card border border-ink p-4 sm:p-5 shadow-[4px_4px_0px_#111111]">
-                  <span className="text-[9px] font-black tracking-widest text-lime bg-ink px-2 py-0.5 uppercase inline-block mb-2">
+                  <span className="text-[9px] font-black tracking-widest text-neutral-950 bg-lime px-2.5 py-0.5 uppercase inline-block mb-2 font-mono shadow-sm">
                     02 / CHEST IDENTITY
                   </span>
-                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight">
+                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight break-normal">
                     MINI BUBBLE CHEST PUFF
                   </h3>
-                  <p className="text-xs text-[#555] mt-1.5 leading-relaxed font-medium">
+                  <p className="text-xs text-muted mt-1.5 leading-relaxed font-medium">
                     Tactile "KEEP GOD FIRST" insignia on the left chest printed with warm vanilla custard foam ink, heat-cured for lasting 3D elevation.
                   </p>
                   <div className="flex gap-1.5 mt-3">
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">PUFF FOAM</span>
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">CRACK-PROOF</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">PUFF FOAM</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">CRACK-PROOF</span>
                   </div>
                 </div>
               </motion.div>
@@ -273,21 +273,21 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               {/* ANNOTATION 3: DROPPED SHOULDER FIT */}
               <motion.div
                 style={{ opacity: feat3Opacity, y: feat3Y }}
-                className="absolute left-2 sm:left-6 md:left-10 lg:left-16 bottom-1/4 max-w-[260px] sm:max-w-[290px] z-20 pointer-events-none"
+                className="absolute left-2 sm:left-6 md:left-10 lg:left-16 bottom-1/4 w-[290px] sm:w-[325px] max-w-[92vw] z-20 pointer-events-none"
               >
                 <div className="bg-card border border-ink p-4 sm:p-5 shadow-[4px_4px_0px_#111111]">
-                  <span className="text-[9px] font-black tracking-widest text-lime bg-ink px-2 py-0.5 uppercase inline-block mb-2">
+                  <span className="text-[9px] font-black tracking-widest text-neutral-950 bg-lime px-2.5 py-0.5 uppercase inline-block mb-2 font-mono shadow-sm">
                     03 / STREETWEAR CUT
                   </span>
-                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight">
+                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight break-normal">
                     OVERSIZED DROP SHOULDER
                   </h3>
-                  <p className="text-xs text-[#555] mt-1.5 leading-relaxed font-medium">
+                  <p className="text-xs text-muted mt-1.5 leading-relaxed font-medium">
                     Extended armholes and wide sleeves that rest just above the elbows. Engineered for an effortless boxy silhouette with unconstrained posture.
                   </p>
                   <div className="flex gap-1.5 mt-3">
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">RELAXED ARMHOLE</span>
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">HEAVY DRAPE</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">RELAXED ARMHOLE</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">HEAVY DRAPE</span>
                   </div>
                 </div>
               </motion.div>
@@ -295,21 +295,21 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
               {/* ANNOTATION 4: STATEMENT BACK PUFF PRINT */}
               <motion.div
                 style={{ opacity: feat4Opacity, y: feat4Y }}
-                className="absolute right-2 sm:right-6 md:right-10 lg:right-16 bottom-1/4 max-w-[260px] sm:max-w-[290px] z-20 pointer-events-none"
+                className="absolute right-2 sm:right-6 md:right-10 lg:right-16 bottom-1/4 w-[290px] sm:w-[325px] max-w-[92vw] z-20 pointer-events-none"
               >
                 <div className="bg-card border border-ink p-4 sm:p-5 shadow-[4px_4px_0px_#111111]">
-                  <span className="text-[9px] font-black tracking-widest text-lime bg-ink px-2 py-0.5 uppercase inline-block mb-2">
+                  <span className="text-[9px] font-black tracking-widest text-neutral-950 bg-lime px-2.5 py-0.5 uppercase inline-block mb-2 font-mono shadow-sm">
                     04 / SIGNATURE ART
                   </span>
-                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight">
+                  <h3 className="text-sm sm:text-base font-black text-ink uppercase tracking-tight break-normal">
                     TACTILE FULL-BACK BUBBLE ART
                   </h3>
-                  <p className="text-xs text-[#555] mt-1.5 leading-relaxed font-medium">
+                  <p className="text-xs text-muted mt-1.5 leading-relaxed font-medium">
                     High-relief statement: "IT'S A GOOD DAY TO KEEP GOD FIRST" sprawling across the shoulders. Bold retro-bubble typography with deep tactile texture.
                   </p>
                   <div className="flex gap-1.5 mt-3">
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">HIGH RELIEF</span>
-                    <span className="text-[9px] font-black bg-paper border border-line px-1.5 py-0.5 uppercase">GOLD CUSTARD</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">HIGH RELIEF</span>
+                    <span className="text-[9px] font-black text-ink bg-paper border border-line px-2 py-0.5 uppercase font-mono">GOLD CUSTARD</span>
                   </div>
                 </div>
               </motion.div>
@@ -409,7 +409,7 @@ export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) 
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 border text-xs font-bold transition-all ${
                     selectedColorway === cw.id
                       ? 'border-ink bg-paper ring-1 ring-ink shadow-sm'
-                      : 'border-line hover:border-ink/50 bg-white'
+                      : 'border-line hover:border-ink/50 bg-card'
                   }`}
                 >
                   <span
