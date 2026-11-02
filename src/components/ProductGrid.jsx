@@ -10,6 +10,8 @@ export default function ProductGrid({
   activeCategory,
   onSelectCategory,
   onAddToCart,
+  onUpdateQty,
+  cart = [],
   onOpenQuickView,
 }) {
   const filtered = products.filter(
@@ -60,14 +62,24 @@ export default function ProductGrid({
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <AnimatePresence mode="popLayout">
-              {filtered.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={onAddToCart}
-                  onOpenQuickView={onOpenQuickView}
-                />
-              ))}
+              {filtered.map((product) => {
+                const cartItem = cart.find((item) => item.id === product.id);
+                const cartQty = cart
+                  .filter((item) => item.id === product.id)
+                  .reduce((sum, item) => sum + item.qty, 0);
+
+                return (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    onUpdateQty={onUpdateQty}
+                    cartItem={cartItem}
+                    cartQty={cartQty}
+                    onOpenQuickView={onOpenQuickView}
+                  />
+                );
+              })}
             </AnimatePresence>
           </div>
         ) : (

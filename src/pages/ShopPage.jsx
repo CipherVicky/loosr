@@ -8,6 +8,8 @@ export default function ShopPage({
   categoryFilter = 'All',
   onSelectCategory,
   onAddToCart,
+  onUpdateQty,
+  cart = [],
   onOpenQuickView,
   onInspect3D,
   onOpenCart,
@@ -162,14 +164,24 @@ export default function ShopPage({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={onAddToCart}
-                onOpenQuickView={onOpenQuickView}
-              />
-            ))}
+            {filteredProducts.map((product) => {
+              const cartItem = cart.find((item) => item.id === product.id);
+              const cartQty = cart
+                .filter((item) => item.id === product.id)
+                .reduce((sum, item) => sum + item.qty, 0);
+
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={onAddToCart}
+                  onUpdateQty={onUpdateQty}
+                  cartItem={cartItem}
+                  cartQty={cartQty}
+                  onOpenQuickView={onOpenQuickView}
+                />
+              );
+            })}
           </div>
         )}
       </section>

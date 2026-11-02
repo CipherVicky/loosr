@@ -11,11 +11,13 @@ import {
   ShieldCheck,
   Sliders,
   Maximize2,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import TshirtCanvas from '../components/TshirtCanvas';
 import { initialProducts, rupee } from '../data/products';
 
-export default function Inspect360Page({ onAddToCart, onOpenCart }) {
+export default function Inspect360Page({ onAddToCart, onUpdateQty, cart = [], onOpenCart }) {
   const kgfProduct = initialProducts.find((p) => p.id === 101) || initialProducts[0];
 
   const [selectedColorway, setSelectedColorway] = useState('original');
@@ -251,24 +253,68 @@ export default function Inspect360Page({ onAddToCart, onOpenCart }) {
               </div>
             </div>
 
-            {/* Instant Add & Direct Checkout Action Button */}
+            {/* Instant Add & Direct Checkout Action Button or '- 1 +' Quantity Controller */}
             <div className="mt-8 pt-4 border-t border-line">
-              <button
-                onClick={handleBuy}
-                className="w-full py-4 bg-lime text-neutral-950 font-black text-xs tracking-widest uppercase border border-ink hover:bg-ink hover:text-lime transition-all duration-200 shadow-[4px_4px_0px_#111111] flex items-center justify-center gap-2 active:translate-x-0.5 active:translate-y-0.5"
-              >
-                {added ? (
-                  <>
-                    <Check className="w-4 h-4 text-neutral-950" />
-                    <span>ADDED TO BAG! OPENING CHECKOUT...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>ADD TO BAG & CHECKOUT NOW</span>
-                  </>
-                )}
-              </button>
+              {(() => {
+                const cartItem = cart.find((i) => i.id === 101);
+                const cartQty = cartItem ? cartItem.qty : 0;
+
+                if (cartQty > 0) {
+                  return (
+                    <div className="w-full py-3 bg-ink text-white border border-ink flex items-center justify-between px-5 shadow-[4px_4px_0px_#d7ff36]">
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQty && onUpdateQty(cartItem, -1)}
+                        className="w-10 h-10 flex items-center justify-center bg-neutral-900 hover:bg-lime hover:text-ink text-white transition-all font-black text-sm border border-white/20 active:scale-95 cursor-pointer"
+                        title="Decrease quantity"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+
+                      <div className="flex items-center gap-2.5 font-mono text-sm font-black select-none">
+                        <span className="text-lime text-base">{cartQty}</span>
+                        <span className="text-xs text-neutral-300 uppercase tracking-widest font-sans">IN YOUR BAG</span>
+                        <button
+                          onClick={onOpenCart}
+                          className="text-xs text-lime underline uppercase ml-2 hover:text-white"
+                        >
+                          VIEW BAG →
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQty && onUpdateQty(cartItem, 1)}
+                        className="w-10 h-10 flex items-center justify-center bg-lime text-ink hover:bg-white transition-all font-black text-sm border border-ink active:scale-95 cursor-pointer"
+                        title="Increase quantity"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    onClick={handleBuy}
+                    className="w-full py-4 bg-lime text-neutral-950 font-black text-xs tracking-widest uppercase border border-ink hover:bg-ink hover:text-lime transition-all duration-200 shadow-[4px_4px_0px_#111111] flex items-center justify-center gap-2 active:translate-x-0.5 active:translate-y-0.5"
+                  >
+                    {added ? (
+                      <>
+                        <Check className="w-4 h-4 text-neutral-950" />
+                        <span>ADDED TO BAG! OPENING CHECKOUT...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>ADD TO BAG & CHECKOUT NOW</span>
+                      </>
+                    )}
+                  </button>
+                );
+              })()}
 
               <div className="mt-3 flex items-center justify-between text-[10px] font-black uppercase text-muted tracking-wider">
                 <span className="flex items-center gap-1">

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, ShieldCheck, Ruler, ArrowRight, Truck } from 'lucide-react';
+import { X, Check, ShieldCheck, Ruler, ArrowRight, Truck, Plus, Minus } from 'lucide-react';
 import { rupee } from '../data/products';
 
-export default function QuickViewModal({ product, onClose, onAddToCart }) {
+export default function QuickViewModal({ product, onClose, onAddToCart, onUpdateQty, cart = [] }) {
   if (!product) return null;
 
   const [selectedColor, setSelectedColor] = useState(
@@ -16,6 +16,15 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
   const [viewSide, setViewSide] = useState('front');
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [added, setAdded] = useState(false);
+
+  // Check matching item in cart
+  const cartItem = cart.find(
+    (item) =>
+      item.id === product.id &&
+      item.chosenColor === selectedColor &&
+      item.chosenSize === selectedSize
+  );
+  const cartQty = cartItem ? cartItem.qty : 0;
 
   const handleAdd = () => {
     onAddToCart({
@@ -256,28 +265,58 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Action Button: Add to Bag or '- 1 +' Quantity Selector */}
               <div>
-                <button
-                  onClick={handleAdd}
-                  className={`w-full py-4 text-xs font-black tracking-widest uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-                    added
-                      ? 'bg-ink text-lime'
-                      : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
-                  }`}
-                >
-                  {added ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      <span>ADDED TO YOUR BAG</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>ADD TO BAG — {rupee(product.price)}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
+                {cartQty > 0 ? (
+                  <div className="w-full py-3 bg-ink text-white border border-ink flex items-center justify-between px-4 shadow-[4px_4px_0px_#d7ff36]">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateQty && onUpdateQty(cartItem, -1)}
+                      className="w-10 h-10 flex items-center justify-center bg-neutral-900 hover:bg-lime hover:text-ink text-white transition-all font-black text-sm border border-white/20 active:scale-95 cursor-pointer"
+                      title="Decrease quantity"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex items-center gap-2 font-mono text-sm font-black select-none">
+                      <span className="text-lime text-base">{cartQty}</span>
+                      <span className="text-xs text-neutral-300 uppercase tracking-widest font-sans">IN YOUR BAG</span>
+                      <span className="text-neutral-400 font-mono text-xs">({rupee(product.price * cartQty)})</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => onUpdateQty && onUpdateQty(cartItem, 1)}
+                      className="w-10 h-10 flex items-center justify-center bg-lime text-ink hover:bg-white transition-all font-black text-sm border border-ink active:scale-95 cursor-pointer"
+                      title="Increase quantity"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleAdd}
+                    className={`w-full py-4 text-xs font-black tracking-widest uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                      added
+                        ? 'bg-ink text-lime'
+                        : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
+                    }`}
+                  >
+                    {added ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>ADDED TO YOUR BAG</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>ADD TO BAG — {rupee(product.price)}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                )}
 
                 <div className="flex items-center justify-between text-[10px] font-bold text-muted mt-3">
                   <span className="flex items-center gap-1">

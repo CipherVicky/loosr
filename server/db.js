@@ -32,9 +32,9 @@ function formatQuery(sql, isPg) {
   if (!isPg) return sql;
   let index = 1;
   let formatted = sql.replace(/\?/g, () => `$${index++}`);
-  // If INSERT query without RETURNING, append RETURNING id
+  // If INSERT query without RETURNING, append RETURNING *
   if (/^\s*INSERT\s+INTO/i.test(formatted) && !/RETURNING/i.test(formatted)) {
-    formatted += ' RETURNING id';
+    formatted += ' RETURNING *';
   }
   return formatted;
 }
@@ -149,7 +149,7 @@ const db = {
       const pgSql = formatQuery(sql, true);
       const res = await pool.query(pgSql, params);
       return {
-        lastInsertRowid: res.rows[0]?.id || null,
+        lastInsertRowid: res.rows[0]?.id || res.rows[0]?.user_id || null,
         changes: res.rowCount,
       };
     } else {

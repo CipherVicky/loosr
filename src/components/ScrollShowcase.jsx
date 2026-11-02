@@ -12,11 +12,13 @@ import {
   Play,
   Pause,
   EyeOff,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import TshirtCanvas from './TshirtCanvas';
 import { rupee } from '../data/products';
 
-export default function ScrollShowcase({ onAddToCart }) {
+export default function ScrollShowcase({ onAddToCart, onUpdateQty, cart = [] }) {
   const containerRef = useRef(null);
   const stageRef = useRef(null);
 
@@ -442,27 +444,65 @@ export default function ScrollShowcase({ onAddToCart }) {
             </div>
           </div>
 
-          {/* Direct Buy CTA */}
-          <button
-            onClick={handleQuickAdd}
-            className={`w-full sm:w-auto px-7 py-3.5 text-xs font-black tracking-wider uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-              added
-                ? 'bg-ink text-lime'
-                : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
-            }`}
-          >
-            {added ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>ADDED TO BAG</span>
-              </>
-            ) : (
-              <>
-                <span>ADD TO BAG — {rupee(1299)}</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          {/* Direct Buy CTA or Quantity Controller */}
+          {(() => {
+            const cartItem = cart.find((i) => i.id === 101);
+            const cartQty = cartItem ? cartItem.qty : 0;
+
+            if (cartQty > 0) {
+              return (
+                <div className="w-full sm:w-auto px-5 py-2.5 bg-ink text-white border border-ink flex items-center justify-between sm:justify-center gap-3 shadow-[4px_4px_0px_#d7ff36]">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQty && onUpdateQty(cartItem, -1)}
+                    className="w-8 h-8 flex items-center justify-center bg-neutral-900 hover:bg-lime hover:text-ink text-white transition-all font-black text-sm border border-white/20 active:scale-95 cursor-pointer"
+                    title="Decrease quantity"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+
+                  <div className="flex items-center gap-2 font-mono text-xs font-black select-none">
+                    <span className="text-lime text-sm">{cartQty}</span>
+                    <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-sans">IN BAG</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQty && onUpdateQty(cartItem, 1)}
+                    className="w-8 h-8 flex items-center justify-center bg-lime text-ink hover:bg-white transition-all font-black text-sm border border-ink active:scale-95 cursor-pointer"
+                    title="Increase quantity"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <button
+                onClick={handleQuickAdd}
+                className={`w-full sm:w-auto px-7 py-3.5 text-xs font-black tracking-wider uppercase border border-ink transition-all duration-200 flex items-center justify-center gap-2 shadow-[4px_4px_0px_#111111] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                  added
+                    ? 'bg-ink text-lime'
+                    : 'bg-lime text-neutral-950 hover:bg-ink hover:text-lime'
+                }`}
+              >
+                {added ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>ADDED TO BAG</span>
+                  </>
+                ) : (
+                  <>
+                    <span>ADD TO BAG — {rupee(1299)}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            );
+          })()}
         </div>
 
         {/* Clean Cam Exit Floating Button (visible when Clean Cam is on) */}

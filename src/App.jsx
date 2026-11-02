@@ -22,7 +22,14 @@ export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [activeTab, setActiveTab] = useState('home'); // 'home', 'shop', 'anatomy', 't-shirts', 'hoodies', 'lookbook', 'story'
   const [products, setProducts] = useState(initialProducts);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('loosr_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [activeCategory, setActiveCategory] = useState('All');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -129,6 +136,17 @@ export default function App() {
       .then((data) => {
         if (data && Array.isArray(data.cart) && data.cart.length > 0) {
           setCart(data.cart);
+          try {
+            localStorage.setItem('loosr_cart', JSON.stringify(data.cart));
+          } catch (e) {}
+        } else {
+          // If server cart is empty but localStorage has items, sync to server
+          try {
+            const local = JSON.parse(localStorage.getItem('loosr_cart') || '[]');
+            if (local.length > 0) {
+              syncCartToDb(local);
+            }
+          } catch (e) {}
         }
       })
       .catch((err) => console.error('Load cart error:', err));
@@ -185,11 +203,13 @@ export default function App() {
 
   const handleAddToCart = (product) => {
     setCart((prev) => {
+      const targetColor = product.chosenColor || product.garment;
+      const targetSize = product.chosenSize || 'L';
       const existingIndex = prev.findIndex(
         (x) =>
           x.id === product.id &&
-          x.chosenColor === (product.chosenColor || product.garment) &&
-          x.chosenSize === (product.chosenSize || 'L')
+          x.chosenColor === targetColor &&
+          x.chosenSize === targetSize
       );
 
       let next;
@@ -204,12 +224,15 @@ export default function App() {
           ...prev,
           {
             ...product,
-            chosenColor: product.chosenColor || product.garment,
-            chosenSize: product.chosenSize || 'L',
+            chosenColor: targetColor,
+            chosenSize: targetSize,
             qty: 1,
           },
         ];
       }
+      try {
+        localStorage.setItem('loosr_cart', JSON.stringify(next));
+      } catch (e) {}
       syncCartToDb(next);
       return next;
     });
@@ -221,16 +244,21 @@ export default function App() {
     setCart((prev) => {
       const next = prev
         .map((x) => {
-          if (
+          const isMatch =
             x.id === item.id &&
-            x.chosenColor === item.chosenColor &&
-            x.chosenSize === item.chosenSize
-          ) {
+            (!item.chosenColor || x.chosenColor === item.chosenColor) &&
+            (!item.chosenSize || x.chosenSize === item.chosenSize);
+
+          if (isMatch) {
             return { ...x, qty: x.qty + delta };
           }
           return x;
         })
         .filter((x) => x.qty > 0);
+
+      try {
+        localStorage.setItem('loosr_cart', JSON.stringify(next));
+      } catch (e) {}
       syncCartToDb(next);
       return next;
     });
@@ -246,6 +274,9 @@ export default function App() {
             x.chosenSize === item.chosenSize
           )
       );
+      try {
+        localStorage.setItem('loosr_cart', JSON.stringify(next));
+      } catch (e) {}
       syncCartToDb(next);
       return next;
     });
@@ -281,6 +312,9 @@ export default function App() {
     }
 
     setCart([]);
+    try {
+      localStorage.removeItem('loosr_cart');
+    } catch (e) {}
     syncCartToDb([]);
     setIsCartOpen(false);
   };
@@ -373,7 +407,11 @@ export default function App() {
             />
 
             {/* 3D Scroll-Driven Interactive Rotating T-Shirt Anatomy */}
-            <ScrollShowcase onAddToCart={handleAddToCart} />
+            <ScrollShowcase
+              onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
+            />
 
             {/* Curated Product Showcase */}
             <ProductGrid
@@ -381,6 +419,8 @@ export default function App() {
               activeCategory={activeCategory}
               onSelectCategory={setActiveCategory}
               onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
               onOpenQuickView={(p) => setQuickViewProduct(p)}
             />
 
@@ -405,6 +445,8 @@ export default function App() {
               categoryFilter={activeCategory}
               onSelectCategory={setActiveCategory}
               onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
               onOpenQuickView={(p) => setQuickViewProduct(p)}
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
@@ -421,6 +463,8 @@ export default function App() {
               categoryFilter="T-Shirts"
               onSelectCategory={setActiveCategory}
               onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
               onOpenQuickView={(p) => setQuickViewProduct(p)}
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
@@ -437,6 +481,8 @@ export default function App() {
               categoryFilter="Hoodies"
               onSelectCategory={setActiveCategory}
               onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
               onOpenQuickView={(p) => setQuickViewProduct(p)}
               onInspect3D={() => handleSelectTab('anatomy')}
               onOpenCart={() => setIsCartOpen(true)}
@@ -450,6 +496,8 @@ export default function App() {
           <>
             <Inspect360Page
               onAddToCart={handleAddToCart}
+              onUpdateQty={handleUpdateQty}
+              cart={cart}
               onOpenCart={() => setIsCartOpen(true)}
             />
             <Footer onShopClick={() => handleSelectTab('shop', 'All')} onNavigateTab={handleSelectTab} />
@@ -486,6 +534,8 @@ export default function App() {
           product={quickViewProduct}
           onClose={() => setQuickViewProduct(null)}
           onAddToCart={handleAddToCart}
+          onUpdateQty={handleUpdateQty}
+          cart={cart}
         />
       )}
 
